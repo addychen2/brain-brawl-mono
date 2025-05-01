@@ -54,71 +54,61 @@ const Question = ({
   // Determine answer button style
   const getAnswerButtonStyle = (answer: string) => {
     if (!selectedAnswer) {
-      return 'answer-button';
+      return 'retro-button option-button';
     }
     
     if (answer === question.correctAnswer) {
-      return 'answer-button correct';
+      return 'retro-button option-button correct-answer';
     }
     
     if (selectedAnswer === answer && answer !== question.correctAnswer) {
-      return 'answer-button incorrect';
+      return 'retro-button option-button wrong-answer';
     }
     
-    return 'answer-button disabled';
+    return 'retro-button option-button disabled';
   };
   
   return (
-    <div className="question-container">
-      <div className="question-header">
-        <span className="category">{question.category}</span>
-        <span className="difficulty">{question.difficulty}</span>
-      </div>
-      
-      <div className="timer-container">
-        <div 
-          className="timer-bar" 
-          style={{ 
-            width: `${(timeRemaining / 20) * 100}%`,
-            backgroundColor: timeRemaining <= 5 ? '#ff4d4d' : '#4caf50'
-          }}
-        ></div>
-        <span className="timer-text">{timeRemaining}s</span>
-      </div>
-      
-      <div className="question-text">
-        <h2>{formatText(question.question)}</h2>
-      </div>
-      
-      <div className="answers-container">
-        {shuffledAnswers.map((answer, index) => (
-          <button
-            key={index}
-            className={getAnswerButtonStyle(answer)}
-            onClick={() => !selectedAnswer && onSubmitAnswer(answer)}
-            disabled={!!selectedAnswer}
-          >
-            {formatText(answer)}
-          </button>
-        ))}
-      </div>
-      
-      {answerResult && (
-        <div className="answer-feedback">
-          {answerResult.isCorrect ? (
-            <div className="correct-answer">
-              <span>✓</span> Correct! +{answerResult.pointsEarned} points
-            </div>
-          ) : (
-            <div className="incorrect-answer">
-              <span>✗</span> Incorrect. The correct answer was: {formatText(question.correctAnswer)}
-            </div>
-          )}
+    <div className="retro-content">
+      <div className="practice-header">
+        <h1 className="retro-title">brain brawl</h1>
+        <div className="practice-stats">
+          <p>round: {round}/{totalRounds}</p>
+          <p>category: {question.category}</p>
+          <p className={timeRemaining <= 5 ? 'time-low' : ''}>time: {timeRemaining}s</p>
         </div>
-      )}
+      </div>
       
-      <div className="round-progress">
-        Question {round} of {totalRounds}
+      <div className="retro-menu practice-container">
+        <div className="question-category">{question.difficulty}</div>
+        <p className="question-text">{formatText(question.question)}</p>
+        
+        <div className="options-container">
+          {shuffledAnswers.map((answer, index) => (
+            <button
+              key={index}
+              className={getAnswerButtonStyle(answer)}
+              onClick={() => !selectedAnswer && onSubmitAnswer(answer)}
+              disabled={!!selectedAnswer}
+            >
+              {formatText(answer)}
+            </button>
+          ))}
+        </div>
+        
+        {answerResult && (
+          <div className="retro-answer-feedback">
+            {answerResult.isCorrect ? (
+              <p className="retro-correct">
+                correct! +{answerResult.pointsEarned} points
+              </p>
+            ) : (
+              <p className="retro-incorrect">
+                incorrect. the correct answer was: {formatText(question.correctAnswer)}
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import { useState, FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 interface RegisterProps {
@@ -20,12 +20,12 @@ const Register = ({ onRegister }: RegisterProps) => {
     setError('');
     
     if (!username || !password || !confirmPassword) {
-      setError('Please fill in all fields');
+      setError('please fill in all fields');
       return;
     }
     
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError('passwords do not match');
       return;
     }
     
@@ -42,64 +42,82 @@ const Register = ({ onRegister }: RegisterProps) => {
       onRegister(userData);
       navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to register. Please try again.');
+      setError(err.response?.data?.message || 'failed to register. please try again.');
     } finally {
       setIsLoading(false);
     }
   };
   
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <h2>Register for Brain Brawl</h2>
+    <div className="retro-content">
+      <h1 className="retro-title">register</h1>
+      
+      <div className="retro-menu">
+        {error && <div className="retro-error">{error}</div>}
         
-        {error && <div className="error-message">{error}</div>}
-        
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="username">Username</label>
+        <form onSubmit={handleSubmit} className="retro-form">
+          <div className="retro-form-group">
+            <label htmlFor="username">username</label>
             <input
               type="text"
               id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Choose a username"
+              placeholder="choose a username"
               disabled={isLoading}
+              className="retro-input"
             />
           </div>
           
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
+          <div className="retro-form-group">
+            <label htmlFor="password">password</label>
             <input
               type="password"
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Choose a password"
+              placeholder="choose a password"
               disabled={isLoading}
+              className="retro-input"
             />
           </div>
           
-          <div className="form-group">
-            <label htmlFor="confirm-password">Confirm Password</label>
+          <div className="retro-form-group">
+            <label htmlFor="confirm-password">confirm password</label>
             <input
               type="password"
               id="confirm-password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirm your password"
+              placeholder="confirm your password"
               disabled={isLoading}
+              className="retro-input"
             />
           </div>
           
-          <button type="submit" className="primary-button" disabled={isLoading}>
-            {isLoading ? 'Registering...' : 'Register'}
+          <button type="submit" className="retro-button" disabled={isLoading}>
+            {isLoading ? 'registering...' : 'register'}
+          </button>
+          
+          <div className="retro-auth-options">
+            <p>already have an account?</p>
+            <button 
+              type="button" 
+              onClick={() => navigate('/login')} 
+              className="retro-button"
+            >
+              login
+            </button>
+          </div>
+          
+          <button 
+            type="button"
+            onClick={() => navigate('/')}
+            className="retro-button"
+          >
+            back to home
           </button>
         </form>
-        
-        <div className="auth-footer">
-          Already have an account? <Link to="/login">Login</Link>
-        </div>
       </div>
     </div>
   );

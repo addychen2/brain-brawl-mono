@@ -19,7 +19,7 @@ const Login = ({ onLogin }: LoginProps) => {
     setError('');
     
     if (!username || !password) {
-      setError('Please enter both username and password');
+      setError('please enter both username and password');
       return;
     }
     
@@ -36,70 +36,87 @@ const Login = ({ onLogin }: LoginProps) => {
       onLogin(userData);
       navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to login. Please try again.');
+      setError(err.response?.data?.message || 'failed to login. please try again.');
     } finally {
       setIsLoading(false);
     }
   };
+
+  const handleDemoLogin = () => {
+    const demoUser = {
+      userId: 'demo123',
+      username: 'DemoUser',
+      message: 'Demo login successful'
+    };
+    onLogin(demoUser);
+    navigate('/');
+  };
   
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <h2>Login to Brain Brawl</h2>
+    <div className="retro-content">
+      <h1 className="retro-title">login</h1>
+      
+      <div className="retro-menu">
+        {error && <div className="retro-error">{error}</div>}
         
-        {error && <div className="error-message">{error}</div>}
-        
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="username">Username</label>
+        <form onSubmit={handleSubmit} className="retro-form">
+          <div className="retro-form-group">
+            <label htmlFor="username">username</label>
             <input
               type="text"
               id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter your username"
+              placeholder="enter your username"
               disabled={isLoading}
+              className="retro-input"
             />
           </div>
           
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
+          <div className="retro-form-group">
+            <label htmlFor="password">password</label>
             <input
               type="password"
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
+              placeholder="enter your password"
               disabled={isLoading}
+              className="retro-input"
             />
           </div>
           
-          <button type="submit" className="primary-button" disabled={isLoading}>
-            {isLoading ? 'Logging in...' : 'Login'}
+          <button type="submit" className="retro-button" disabled={isLoading}>
+            {isLoading ? 'logging in...' : 'login'}
+          </button>
+          
+          <div className="retro-auth-options">
+            <p>don't have an account?</p>
+            <button 
+              type="button" 
+              onClick={() => navigate('/register')} 
+              className="retro-button"
+            >
+              register
+            </button>
+          </div>
+          
+          <button 
+            type="button"
+            onClick={handleDemoLogin}
+            className="retro-button retro-demo-button"
+          >
+            quick demo login
+          </button>
+          
+          <button 
+            type="button"
+            onClick={() => navigate('/')}
+            className="retro-button"
+          >
+            back to home
           </button>
         </form>
-        
-        <div className="auth-footer">
-          Don't have an account? <Link to="/register">Register</Link>
-        </div>
-      </div>
-      
-      {/* For demo purposes, add a quick login option */}
-      <div className="demo-login">
-        <button 
-          onClick={() => {
-            const demoUser = {
-              userId: 'demo123',
-              username: 'DemoUser',
-              message: 'Demo login successful'
-            };
-            onLogin(demoUser);
-            navigate('/');
-          }}
-          className="secondary-button"
-        >
-          Quick Demo Login
-        </button>
       </div>
     </div>
   );

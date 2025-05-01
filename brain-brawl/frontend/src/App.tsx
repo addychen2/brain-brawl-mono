@@ -6,11 +6,14 @@ import Register from './components/auth/Register';
 import Home from './components/Home';
 import Game from './components/game/Game';
 import WaitingRoom from './components/game/WaitingRoom';
+import ModeSelection from './components/game/ModeSelection';
+import PracticeMode from './components/game/PracticeMode';
 import Profile from './components/profile/Profile';
 import Leaderboard from './components/Leaderboard';
 import NotFound from './components/NotFound';
 import Navbar from './components/layout/Navbar';
 import './App.css';
+import './RetroTheme.css';
 
 function App() {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -74,11 +77,14 @@ function App() {
     return children;
   };
 
+  // Always use retro mode
+  const retroMode = true;
+
   return (
     <Router>
-      <div className="app">
-        <Navbar user={user} onLogout={handleLogout} />
-        <main className="main-content">
+      <div className="app retro-mode">
+        {/* Hide navbar in retro mode */}
+        <main className="retro-content">
           <Routes>
             <Route path="/" element={<Home user={user} />} />
             <Route path="/login" element={<Login onLogin={handleLogin} />} />
@@ -97,6 +103,26 @@ function App() {
                 <ProtectedRoute>
                   <WaitingRoom socket={socket} user={user} />
                 </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/mode-selection" 
+              element={
+                retroMode ? (
+                  <ModeSelection user={user} />
+                ) : (
+                  <Navigate to="/" replace />
+                )
+              } 
+            />
+            <Route 
+              path="/practice" 
+              element={
+                retroMode ? (
+                  <PracticeMode />
+                ) : (
+                  <Navigate to="/" replace />
+                )
               } 
             />
             <Route 

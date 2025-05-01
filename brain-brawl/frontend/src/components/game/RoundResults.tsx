@@ -43,66 +43,61 @@ const RoundResults = ({ results, userId }: RoundResultsProps) => {
   };
   
   return (
-    <div className="round-results-container">
-      <h2>Round Results</h2>
+    <div className="retro-content">
+      <h1 className="retro-title">round results</h1>
       
-      <div className="question-recap">
-        <h3>Question:</h3>
-        <p>{formatText(results.question.question)}</p>
-        <div className="correct-answer">
-          <span>Correct Answer:</span> {formatText(results.question.correctAnswer)}
+      <div className="retro-menu">
+        <div className="question-recap">
+          <p className="question-text">{formatText(results.question.question)}</p>
+          <div className="retro-correct-answer">
+            <span>correct answer:</span> {formatText(results.question.correctAnswer)}
+          </div>
         </div>
-      </div>
-      
-      <div className="players-results">
-        <div className="result-comparison">
-          <div className="player-column">
-            <h3>You</h3>
-            <div className={`result-card ${playerResult?.isCorrect ? 'correct' : 'incorrect'}`}>
-              <div className="answer-status">
-                {playerResult?.isCorrect ? '✓ Correct' : '✗ Incorrect'}
+        
+        <div className="retro-results-comparison">
+          <div className="retro-player-result">
+            <h3>you:</h3>
+            <div className={`retro-result-card ${playerResult?.isCorrect ? 'retro-correct' : 'retro-incorrect'}`}>
+              <div className="retro-answer-status">
+                {playerResult?.isCorrect ? '✓ correct' : '✗ incorrect'}
               </div>
-              <div className="answer-details">
-                <p>
-                  <span>Your answer:</span> {playerResult?.answer ? formatText(playerResult.answer) : 'No answer'}
-                </p>
-                <p>
-                  <span>Time:</span> {getTimeText(playerResult?.timeRemaining)}
-                </p>
-                <p>
-                  <span>Points earned:</span> {playerResult?.pointsEarned}
-                </p>
-              </div>
+              <p>
+                answer: {playerResult?.answer ? formatText(playerResult.answer) : 'no answer'}
+              </p>
+              <p>
+                time: {getTimeText(playerResult?.timeRemaining)}
+              </p>
+              <p>
+                points: +{playerResult?.pointsEarned}
+              </p>
             </div>
           </div>
           
-          <div className="vs-indicator">VS</div>
+          <div className="retro-vs">vs</div>
           
-          <div className="opponent-column">
-            <h3>Opponent</h3>
-            <div className={`result-card ${opponentResult?.isCorrect ? 'correct' : 'incorrect'}`}>
-              <div className="answer-status">
-                {opponentResult?.isCorrect ? '✓ Correct' : '✗ Incorrect'}
+          <div className="retro-opponent-result">
+            <h3>opponent:</h3>
+            <div className={`retro-result-card ${opponentResult?.isCorrect ? 'retro-correct' : 'retro-incorrect'}`}>
+              <div className="retro-answer-status">
+                {opponentResult?.isCorrect ? '✓ correct' : '✗ incorrect'}
               </div>
-              <div className="answer-details">
-                <p>
-                  <span>Their answer:</span> {opponentResult?.answer ? formatText(opponentResult.answer) : 'No answer'}
-                </p>
-                <p>
-                  <span>Time:</span> {getTimeText(opponentResult?.timeRemaining)}
-                </p>
-                <p>
-                  <span>Points earned:</span> {opponentResult?.pointsEarned}
-                </p>
-              </div>
+              <p>
+                answer: {opponentResult?.answer ? formatText(opponentResult.answer) : 'no answer'}
+              </p>
+              <p>
+                time: {getTimeText(opponentResult?.timeRemaining)}
+              </p>
+              <p>
+                points: +{opponentResult?.pointsEarned}
+              </p>
             </div>
           </div>
         </div>
-      </div>
-      
-      <div className="next-round-info">
-        <p>Next question coming up...</p>
-        <div className="loader small"></div>
+        
+        <div className="retro-next-info">
+          <p>next question coming up...</p>
+          <div className="retro-loader"></div>
+        </div>
       </div>
     </div>
   );

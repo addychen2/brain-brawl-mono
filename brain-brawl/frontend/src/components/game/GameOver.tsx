@@ -30,65 +30,53 @@ const GameOver = ({ results, userId, onRequestRematch }: GameOverProps) => {
   const backgroundClass = isTie ? 'tie-bg' : (isWinner ? 'win-bg' : 'lose-bg');
   
   return (
-    <div className={`game-over-container ${backgroundClass}`}>
-      <div className="game-outcome">
-        <h1>{gameOutcome}</h1>
-      </div>
+    <div className="retro-content">
+      <h1 className="retro-title">
+        {isTie ? "it's a tie!" : (isWinner ? "you win!" : "you lose!")}
+      </h1>
       
-      <div className="final-scores">
-        <div className="player-score">
-          <h3>Your Score</h3>
-          <div className="score-value">{playerResult?.score || 0}</div>
-        </div>
-        
-        <div className="vs-indicator">VS</div>
-        
-        <div className="opponent-score">
-          <h3>Opponent's Score</h3>
-          <div className="score-value">{opponentResult?.score || 0}</div>
-        </div>
-      </div>
-      
-      <div className="game-stats">
-        <h3>Game Statistics</h3>
-        <div className="stats-grid">
-          <div className="stat-card">
-            <span className="stat-label">Score Difference</span>
-            <span className="stat-value">
-              {Math.abs((playerResult?.score || 0) - (opponentResult?.score || 0))}
-            </span>
+      <div className="retro-menu">
+        <div className="retro-final-scores">
+          <div className="retro-player-result">
+            <h3>your score</h3>
+            <div className="retro-score-value">{playerResult?.score || 0}</div>
           </div>
           
-          <div className="stat-card">
-            <span className="stat-label">XP Earned</span>
-            <span className="stat-value">
-              {isWinner ? 100 : (isTie ? 50 : 20)}
-            </span>
+          <div className="retro-vs">vs</div>
+          
+          <div className="retro-opponent-result">
+            <h3>opponent score</h3>
+            <div className="retro-score-value">{opponentResult?.score || 0}</div>
           </div>
         </div>
-      </div>
-      
-      <div className="action-buttons">
-        <button 
-          onClick={onRequestRematch}
-          className="primary-button"
-        >
-          Rematch
-        </button>
         
-        <button 
-          onClick={() => navigate('/waiting-room')}
-          className="secondary-button"
-        >
-          Find New Opponent
-        </button>
+        <div className="retro-game-stats">
+          <p>score difference: {Math.abs((playerResult?.score || 0) - (opponentResult?.score || 0))}</p>
+          <p>xp earned: {isWinner ? 100 : (isTie ? 50 : 20)}</p>
+        </div>
         
-        <button 
-          onClick={() => navigate('/')}
-          className="tertiary-button"
-        >
-          Back to Home
-        </button>
+        <div className="retro-action-buttons">
+          <button 
+            onClick={onRequestRematch}
+            className="retro-button"
+          >
+            rematch
+          </button>
+          
+          <button 
+            onClick={() => navigate('/waiting-room')}
+            className="retro-button"
+          >
+            find new opponent
+          </button>
+          
+          <button 
+            onClick={() => navigate('/')}
+            className="retro-button"
+          >
+            back to home
+          </button>
+        </div>
       </div>
     </div>
   );

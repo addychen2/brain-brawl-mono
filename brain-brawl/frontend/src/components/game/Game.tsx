@@ -348,41 +348,71 @@ const Game = ({ socket, user }: GameProps) => {
   
   if (error) {
     return (
-      <div className="error-container">
-        <p className="error-message">{error}</p>
-        <button 
-          onClick={() => navigate('/waiting-room')} 
-          className="primary-button"
-        >
-          Back to Waiting Room
-        </button>
+      <div className="retro-content">
+        <h1 className="retro-title">error</h1>
+        <div className="retro-menu">
+          <p className="retro-error">{error}</p>
+          <button 
+            onClick={() => navigate('/waiting-room')} 
+            className="retro-button"
+          >
+            back to waiting room
+          </button>
+          <button 
+            onClick={() => navigate('/')} 
+            className="retro-button"
+          >
+            back to home
+          </button>
+        </div>
       </div>
     );
   }
   
-  return (
-    <div className="game-container">
-      <div className="game-info-bar">
-        <div className="player-info">
-          <span className="player-name">{user.username}</span>
+  // For waiting and starting states, use retro styling
+  if (gameState.status === 'waiting' || gameState.status === 'starting') {
+    return (
+      <div className="retro-content">
+        <h1 className="retro-title">brain brawl</h1>
+        <div className="retro-menu">
+          {gameState.status === 'waiting' ? (
+            <>
+              <p>waiting for opponent...</p>
+              <p className="retro-game-id">game id: {gameId}</p>
+              <div className="retro-loader"></div>
+            </>
+          ) : (
+            <>
+              <p>game is starting!</p>
+              <p>get ready...</p>
+              <div className="retro-countdown">3</div>
+            </>
+          )}
+          <button 
+            onClick={() => navigate('/')} 
+            className="retro-button"
+          >
+            cancel and return home
+          </button>
         </div>
         
-        {gameState.status !== 'waiting' && gameState.status !== 'starting' && (
-          <div className="round-info">
-            Round {gameState.round} of {gameState.totalRounds}
+        <div className="retro-player-vs">
+          <div className="retro-player">
+            <p>{user.username}</p>
           </div>
-        )}
-        
-        <div className="opponent-info">
-          <span className="opponent-name">
-            {gameState.opponent ? gameState.opponent.username : 'Opponent'}
-          </span>
+          <div className="retro-vs">vs</div>
+          <div className="retro-opponent">
+            <p>{gameState.opponent ? gameState.opponent.username : 'waiting...'}</p>
+          </div>
         </div>
       </div>
-      
-      <div className="game-content">
-        {renderGameContent()}
-      </div>
+    );
+  }
+  
+  // For active, round_results, and game_over states, let their components handle the styling
+  return (
+    <div className="game-content">
+      {renderGameContent()}
     </div>
   );
 };
