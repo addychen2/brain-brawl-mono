@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Socket } from 'socket.io-client';
+import CharacterSelection from './CharacterSelection';
 
 interface WaitingRoomProps {
   socket: Socket | null;
@@ -11,6 +12,7 @@ const WaitingRoom = ({ socket, user }: WaitingRoomProps) => {
   const [isSearching, setIsSearching] = useState(false);
   const [searchTime, setSearchTime] = useState(0);
   const [error, setError] = useState('');
+  const [selectedCharacter, setSelectedCharacter] = useState('blue');
   
   const navigate = useNavigate();
   
@@ -56,8 +58,9 @@ const WaitingRoom = ({ socket, user }: WaitingRoomProps) => {
     setSearchTime(0);
     setError('');
     
-    // Join the waiting room
-    socket.emit('join_waiting_room', user.userId);
+    // Save character selection to localStorage and send to server
+    localStorage.setItem('selectedCharacter', selectedCharacter);
+    socket.emit('join_waiting_room', { userId: user.userId, character: selectedCharacter });
   };
   
   const handleCancelSearch = () => {
@@ -104,8 +107,13 @@ const WaitingRoom = ({ socket, user }: WaitingRoomProps) => {
               </span>
             </div>
             
+            <CharacterSelection 
+              onSelect={setSelectedCharacter} 
+              selectedCharacter={selectedCharacter} 
+            />
+            
             <p className="waiting-text">
-              Ready to test your knowledge? Click the button below to find an opponent!
+              Ready to test your knowledge? Select your character and click below to find an opponent!
             </p>
             
             <button 

@@ -10,21 +10,25 @@ const setupSocketConnection = (io) => {
     io.on('connection', (socket) => {
         console.log(`User connected: ${socket.id}`);
         // Join waiting room to find an opponent
-        socket.on('join_waiting_room', (userId) => {
-            console.log(`User ${userId} joined waiting room`);
+        socket.on('join_waiting_room', (data) => {
+            const userId = typeof data === 'object' ? data.userId : data;
+            const character = (typeof data === 'object' && data.character) ? data.character : 'blue';
+            
+            console.log(`User ${userId} joined waiting room with character ${character}`);
             // Store this player in the waiting room
-            waitingPlayers.set(socket.id, userId);
+            waitingPlayers.set(socket.id, { userId, character });
             playerConnections.set(userId, 'waiting_room');
             
-            console.log(`Current waiting players: ${Array.from(waitingPlayers.values()).join(', ')}`);
+            console.log(`Current waiting players: ${Array.from(waitingPlayers.values()).map(p => p.userId).join(', ')}`);
             
             socket.join('waiting_room');
-            findMatch(socket, userId, io);
+            findMatch(socket, { userId, character }, io);
         });
         // Join specific game room
         socket.on('join_game', (data) => {
-            const { gameId, userId } = data;
-            console.log(`User ${userId} joined game ${gameId}`);
+            const { gameId, userId, character } = data;
+            const playerCharacter = character || 'blue';
+            console.log(`User ${userId} joined game ${gameId} with character ${playerCharacter}`);
             // Associate this user with this game
             playerConnections.set(userId, gameId);
             // Add the socket to the game's room
@@ -32,6 +36,15 @@ const setupSocketConnection = (io) => {
             // Check if game exists
             const game = activeGames.get(gameId);
             if (game) {
+                // Update player character if joining with character data
+                if (character) {
+                    game.getGameState().players.forEach(player => {
+                        if (player.userId === userId) {
+                            player.character = character;
+                        }
+                    });
+                }
+                
                 // Send game state to the joining player
                 socket.emit('game_state', game.getGameState());
                 // If all players have joined, start the game
@@ -93,11 +106,17 @@ const setupSocketConnection = (io) => {
                     }
                     
                     // First emit the round results to all players
-                    io.to(gameId).emit('round_results', game.getRoundResults());
+                    const roundResults = game.getRoundResults();
                     
-                    // Wait a few seconds before moving to next question
+                    // Apply damage to players based on round results
+                    game.applyDamage();
+                    
+                    // Send round results including damage information
+                    io.to(gameId).emit('round_results', roundResults);
+                    
+                    // Wait a few seconds before moving to next question or ending game
                     setTimeout(() => {
-                        // If game is over, send final results
+                        // If game is over (a player's health is 0), send final results
                         if (game.isGameOver()) {
                             io.to(gameId).emit('game_over', game.getFinalResults());
                             // Clean up the game
@@ -149,6 +168,18 @@ const setupSocketConnection = (io) => {
             }
         });
         // Handle disconnect
+        // Fetch current game state (used to sync health values)
+        socket.on('get_game_state', (data) => {
+            const { gameId } = data;
+            const game = activeGames.get(gameId);
+            
+            if (game) {
+                socket.emit('game_state_update', {
+                    gameState: game.getGameState()
+                });
+            }
+        });
+        
         socket.on('disconnect', () => {
             console.log(`User disconnected: ${socket.id}`);
             handleDisconnect(socket);
@@ -157,7 +188,9 @@ const setupSocketConnection = (io) => {
 };
 exports.setupSocketConnection = setupSocketConnection;
 // Find a match for a player in the waiting room
-function findMatch(socket, userId, io) {
+function findMatch(socket, playerData, io) {
+    const { userId, character } = playerData;
+    
     // Get all sockets in waiting room
     io.in('waiting_room').fetchSockets().then(sockets => {
         // Filter out the current socket
@@ -167,19 +200,32 @@ function findMatch(socket, userId, io) {
         if (availablePlayers.length > 0) {
             const opponent = availablePlayers[0];
             
-            // Get the opponent's userId directly from our waiting players map
-            const opponentId = waitingPlayers.get(opponent.id);
+            // Get the opponent's data directly from our waiting players map
+            const opponentData = waitingPlayers.get(opponent.id);
             
-            if (!opponentId) {
-                console.warn(`Cannot find opponent ID for socket ${opponent.id}`);
+            if (!opponentData || !opponentData.userId) {
+                console.warn(`Cannot find opponent data for socket ${opponent.id}`);
                 return;
             }
             
-            console.log(`Creating game with players: ${userId} and ${opponentId}`);
+            const opponentId = opponentData.userId;
+            const opponentCharacter = opponentData.character || 'pink';
+            
+            console.log(`Creating game with players: ${userId} (${character}) and ${opponentId} (${opponentCharacter})`);
             
             // Create a new game
             const gameId = generateGameId();
             const game = new TriviaGame_1.TriviaGame([userId, opponentId]);
+            
+            // Add character data to the game
+            game.getGameState().players.forEach(player => {
+                if (player.userId === userId) {
+                    player.character = character;
+                } else if (player.userId === opponentId) {
+                    player.character = opponentCharacter;
+                }
+            });
+            
             activeGames.set(gameId, game);
             
             // Update player connections
@@ -289,8 +335,12 @@ function sendNextQuestion(io, gameId) {
                 game.timeUp();
                 io.to(gameId).emit('time_up', { message: 'Time\'s up!' });
                 
+                // Get round results and apply damage
+                const roundResults = game.getRoundResults();
+                game.applyDamage();
+                
                 // Emit round results after time is up
-                io.to(gameId).emit('round_results', game.getRoundResults());
+                io.to(gameId).emit('round_results', roundResults);
                 
                 // Clean up this timer
                 questionTimers.delete(gameId);
