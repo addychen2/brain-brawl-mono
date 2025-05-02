@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Monster Fighter - Select</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Monster Fighter</h1>
+
+    <div class="selection-container">
+        <h2>Choose Your Monsters!</h2>
+        <div class="player-selection">
+            <label for="player1-select">Player 1:</label>
+            <select id="player1-select">
+                <option value="blue" selected>Blue Monster</option>
+                <option value="pink">Pink Monster</option>
+                <option value="white">White Monster</option>
+            </select>
+        </div>
+        <div class="player-selection">
+            <label for="player2-select">Player 2:</label>
+            <select id="player2-select">
+                <option value="pink" selected>Pink Monster</option>
+                <option value="blue">Blue Monster</option>
+                <option value="white">White Monster</option>
+            </select>
+        </div>
+        <button id="start-fight-button">Start Fight</button>
+    </div>
+
+    <div class="fight-container" style="display: none;"> {/* Start hidden */}
+        <div class="character-area">
+            <h3>Player 1</h3>
+            <div class="health-bar-container">
+                <div class="health-bar" id="player1-health-bar">
+                  <div class="health-bar__value"></div>
+                </div>
+            </div>
+            {/* Sprite element ID changed */}
+            <div id="player1-sprite" class="sprite"></div>
+            {/* Button ID changed */}
+             <button id="player1-attack-button" class="attack-button">P1 Attack</button>
+        </div>
+
+        <div class="character-area">
+            <h3>Player 2</h3>
+            <div class="health-bar-container">
+                <div class="health-bar" id="player2-health-bar">
+                  <div class="health-bar__value"></div>
+                </div>
+            </div>
+            {/* Sprite element ID changed */}
+            <div id="player2-sprite" class="sprite"></div>
+            {/* Button ID changed */}
+             <button id="player2-attack-button" class="attack-button">P2 Attack</button>
+        </div>
+    </div>
+
+    <button id="reset-button" style="display: none;">Reset Game</button> {/* Start hidden */}
+
+
+    <script src="script.js"></script>
+</body>
+</html>

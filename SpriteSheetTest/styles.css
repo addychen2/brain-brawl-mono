@@ -1,0 +1,211 @@
+/* Add styles for the selection area */
+.selection-container {
+  background-color: #444;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+  border: 2px solid #111;
+  text-align: center;
+}
+
+.selection-container h2 {
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.player-selection {
+  margin-bottom: 15px;
+}
+
+.player-selection label {
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+.player-selection select {
+  padding: 5px;
+  font-size: 1em;
+  min-width: 150px;
+}
+
+#start-fight-button {
+  padding: 10px 20px;
+  font-size: 1.1em;
+  background-color: #4CAF50; /* Green */
+}
+#start-fight-button:active {
+   background-color: #45a049;
+}
+
+/* Existing body, h1 styles... */
+body {
+background-color: #333;
+color: #eee;
+font-family: sans-serif;
+display: flex;
+flex-direction: column;
+align-items: center;
+padding-top: 20px;
+}
+
+h1 {
+  margin-bottom: 30px;
+}
+
+.fight-container {
+  display: flex; /* Keep this */
+  justify-content: space-around;
+  width: 80%;
+  align-items: flex-end;
+  min-height: 300px;
+  margin-bottom: 30px;
+}
+
+.character-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.character-area h3 { /* Style Player labels */
+  margin-bottom: 5px;
+  font-size: 1em;
+  color: #ccc;
+}
+
+
+/* --- Health Bar --- */
+.health-bar-container {
+  /* margin-bottom: 90%; */ /* Remove the percentage margin if it causes issues */
+  margin-bottom: 5px; /* Use a small fixed margin instead */
+  padding: 3px;
+  background-color: #555;
+  border: 2px solid #111;
+  display: inline-block;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  -ms-interpolation-mode: nearest-neighbor;
+}
+
+/* Health Bar, Value, Buttons styles remain mostly the same... */
+.health-bar {
+width: 150px;
+height: 15px;
+background-color: #cc0000;
+position: relative;
+overflow: hidden;
+border: 1px solid #111;
+--health-percent: 100%;
+}
+.health-bar__value {
+background-color: #00ff00;
+height: 100%;
+width: var(--health-percent);
+position: absolute;
+top: 0;
+left: 0;
+transition: width 0.2s linear;
+}
+button {
+margin-top: 15px;
+padding: 8px 12px;
+font-size: 0.9em;
+cursor: pointer;
+background-color: #777;
+border: 2px solid #111;
+color: white;
+ image-rendering: pixelated;
+ image-rendering: -moz-crisp-edges;
+ image-rendering: crisp-edges;
+ -ms-interpolation-mode: nearest-neighbor;
+}
+button:disabled {
+  background-color: #444;
+  cursor: not-allowed;
+}
+button:active:not(:disabled) {
+  background-color: #666;
+}
+
+
+/* --- Sprites --- */
+.sprite {
+  margin-top: 0;
+  width: 32px;
+  height: 32px;
+  background-repeat: no-repeat;
+  transform: scale(5);
+  transform-origin: bottom center;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  -ms-interpolation-mode: nearest-neighbor;
+}
+
+/* Flip Player 1 Sprite (Left side) */
+#player1-sprite { /* Changed from #pink-monster or #blue-monster */
+  transform: scaleX(-1) scale(5);
+}
+
+/* --- Pink Monster Animations (Keep as before) --- */
+/* Idle (Looping, 4 frames) */
+.pink-idle { background-image: url('/characterSpriteSheet/Pink_Monster/Idle.png'); animation: pink-idle-anim 0.6s steps(4) infinite; }
+@keyframes pink-idle-anim { 100% { background-position: -128px 0; } }
+/* Attack (Plays Once, 6 frames) */
+.pink-attack { background-image: url('/characterSpriteSheet/Pink_Monster/Attack.png'); animation: pink-attack-anim 0.8s steps(6) 1; }
+@keyframes pink-attack-anim { 100% { background-position: -192px 0; } }
+/* Hurt (Plays Once, 4 frames) */
+.pink-hurt { background-image: url('/characterSpriteSheet/Pink_Monster/Hurt.png'); animation: pink-hurt-anim 0.5s steps(4) 1; }
+@keyframes pink-hurt-anim { 100% { background-position: -128px 0; } }
+/* Death (Stays on last frame, 8 frames) */
+.pink-death { background-image: url('/characterSpriteSheet/Pink_Monster/Death.png'); animation: pink-death-anim 1.2s steps(8) 1 forwards; }
+@keyframes pink-death-anim { 100% { background-position: -256px 0; } }
+
+
+/* --- Blue Monster Animations (Keep as before) --- */
+/* Idle (Looping, 4 frames) */
+.blue-idle { background-image: url('/characterSpriteSheet/Blue_Monster/Idle.png'); animation: blue-idle-anim 0.6s steps(4) infinite; }
+@keyframes blue-idle-anim { 100% { background-position: -128px 0; } }
+/* Attack (Plays Once, 6 frames) */
+.blue-attack { background-image: url('/characterSpriteSheet/Blue_Monster/Attack.png'); animation: blue-attack-anim 0.8s steps(6) 1; }
+@keyframes blue-attack-anim { 100% { background-position: -192px 0; } }
+/* Hurt (Plays Once, 4 frames) */
+.blue-hurt { background-image: url('/characterSpriteSheet/Blue_Monster/Hurt.png'); animation: blue-hurt-anim 0.5s steps(4) 1; }
+@keyframes blue-hurt-anim { 100% { background-position: -128px 0; } }
+/* Death (Stays on last frame, 8 frames) */
+.blue-death { background-image: url('/characterSpriteSheet/Blue_Monster/Death.png'); animation: blue-death-anim 1.2s steps(8) 1 forwards; }
+@keyframes blue-death-anim { 100% { background-position: -256px 0; } }
+
+
+/* --- ADD White Monster Animations --- */
+/* ADJUST PATHS and verify frame counts/widths */
+
+/* Idle (Looping, 4 frames) */
+.white-idle {
+  background-image: url('/characterSpriteSheet/White_Monster/Idle.png'); /* ADJUST PATH */
+  animation: white-idle-anim 0.6s steps(4) infinite;
+}
+@keyframes white-idle-anim { 0% { background-position: 0 0; } 100% { background-position: -128px 0; } }
+
+/* Attack (Plays Once, 6 frames) */
+.white-attack {
+  background-image: url('/characterSpriteSheet/White_Monster/Attack.png'); /* ADJUST PATH */
+  animation: white-attack-anim 0.8s steps(6) 1;
+}
+@keyframes white-attack-anim { 0% { background-position: 0 0; } 100% { background-position: -192px 0; } }
+
+/* Hurt (Plays Once, 4 frames) */
+.white-hurt {
+  background-image: url('/characterSpriteSheet/White_Monster/Hurt.png'); /* ADJUST PATH */
+  animation: white-hurt-anim 0.5s steps(4) 1;
+}
+@keyframes white-hurt-anim { 0% { background-position: 0 0; } 100% { background-position: -128px 0; } }
+
+/* Death (Stays on last frame, 8 frames) */
+.white-death {
+  background-image: url('/characterSpriteSheet/White_Monster/Death.png'); /* ADJUST PATH */
+  animation: white-death-anim 1.2s steps(8) 1 forwards;
+}
+@keyframes white-death-anim { 0% { background-position: 0 0; } 100% { background-position: -256px 0; } }
