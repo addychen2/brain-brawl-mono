@@ -3,6 +3,7 @@ import http from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import os from 'os';
 import { setupSocketConnection } from './socket';
 import triviaRoutes from './routes/triviaRoutes';
 import authRoutes from './routes/authRoutes';
@@ -60,9 +61,34 @@ if (process.env.MONGODB_URI) {
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   
-  // Display URL for local network access
+  // Display URLs for network access
   console.log(`\nNetwork access URLs (for other devices on your network):`);
-  console.log(`http://172.20.10.8:${PORT} (Use this on other devices)`);
+  
+  // Find all IPv4 addresses
+  let externalIPs: string[] = [];
+  
+  // Get network interfaces
+  const nets = os.networkInterfaces();
+  
+  // Loop through interfaces
+  Object.keys(nets).forEach(name => {
+    const networkInterface = nets[name];
+    if (networkInterface) {
+      networkInterface.forEach((net: any) => {
+        // Only interested in IPv4 and non-internal addresses
+        if (net.family === 'IPv4' && !net.internal) {
+          console.log(`http://${net.address}:${PORT} (Interface: ${name})`);
+          externalIPs.push(net.address);
+        }
+      });
+    }
+  });
+  
+  // If no external IPs found
+  if (externalIPs.length === 0) {
+    console.log(`No external network interfaces found. Other devices may not be able to connect.`);
+  }
+  
   console.log(`\nLocal access URL (for this computer):`);
   console.log(`http://localhost:${PORT}`);
 });
