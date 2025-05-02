@@ -145,37 +145,37 @@ button:active:not(:disabled) {
 }
 
 /* Flip Player 1 Sprite (Left side) */
-#player1-sprite { /* Changed from #pink-monster or #blue-monster */
+#player2-sprite { /* Changed from #pink-monster or #blue-monster */
   transform: scaleX(-1) scale(5);
 }
 
 /* --- Pink Monster Animations (Keep as before) --- */
 /* Idle (Looping, 4 frames) */
-.pink-idle { background-image: url('/characterSpriteSheet/Pink_Monster/Idle.png'); animation: pink-idle-anim 0.6s steps(4) infinite; }
+.pink-idle { background-image: url('/SpriteSheetTest/characterSpriteSheet/Pink_Monster/Idle.png'); animation: pink-idle-anim 0.6s steps(4) infinite; }
 @keyframes pink-idle-anim { 100% { background-position: -128px 0; } }
 /* Attack (Plays Once, 6 frames) */
-.pink-attack { background-image: url('/characterSpriteSheet/Pink_Monster/Attack.png'); animation: pink-attack-anim 0.8s steps(6) 1; }
+.pink-attack { background-image: url('/SpriteSheetTest/characterSpriteSheet/Pink_Monster/Attack.png'); animation: pink-attack-anim 0.8s steps(6) 1; }
 @keyframes pink-attack-anim { 100% { background-position: -192px 0; } }
 /* Hurt (Plays Once, 4 frames) */
-.pink-hurt { background-image: url('/characterSpriteSheet/Pink_Monster/Hurt.png'); animation: pink-hurt-anim 0.5s steps(4) 1; }
+.pink-hurt { background-image: url('/SpriteSheetTest/characterSpriteSheet/Pink_Monster/Hurt.png'); animation: pink-hurt-anim 0.5s steps(4) 1; }
 @keyframes pink-hurt-anim { 100% { background-position: -128px 0; } }
 /* Death (Stays on last frame, 8 frames) */
-.pink-death { background-image: url('/characterSpriteSheet/Pink_Monster/Death.png'); animation: pink-death-anim 1.2s steps(8) 1 forwards; }
+.pink-death { background-image: url('/SpriteSheetTest/characterSpriteSheet/Pink_Monster/Death.png'); animation: pink-death-anim 1.2s steps(8) 1 forwards; }
 @keyframes pink-death-anim { 100% { background-position: -256px 0; } }
 
 
 /* --- Blue Monster Animations (Keep as before) --- */
 /* Idle (Looping, 4 frames) */
-.blue-idle { background-image: url('/characterSpriteSheet/Blue_Monster/Idle.png'); animation: blue-idle-anim 0.6s steps(4) infinite; }
+.blue-idle { background-image: url('/SpriteSheetTest/characterSpriteSheet/Blue_Monster/Idle.png'); animation: blue-idle-anim 0.6s steps(4) infinite; }
 @keyframes blue-idle-anim { 100% { background-position: -128px 0; } }
 /* Attack (Plays Once, 6 frames) */
-.blue-attack { background-image: url('/characterSpriteSheet/Blue_Monster/Attack.png'); animation: blue-attack-anim 0.8s steps(6) 1; }
+.blue-attack { background-image: url('/SpriteSheetTest/characterSpriteSheet/Blue_Monster/Attack.png'); animation: blue-attack-anim 0.8s steps(6) 1; }
 @keyframes blue-attack-anim { 100% { background-position: -192px 0; } }
 /* Hurt (Plays Once, 4 frames) */
-.blue-hurt { background-image: url('/characterSpriteSheet/Blue_Monster/Hurt.png'); animation: blue-hurt-anim 0.5s steps(4) 1; }
+.blue-hurt { background-image: url('/SpriteSheetTest/characterSpriteSheet/Blue_Monster/Hurt.png'); animation: blue-hurt-anim 0.5s steps(4) 1; }
 @keyframes blue-hurt-anim { 100% { background-position: -128px 0; } }
 /* Death (Stays on last frame, 8 frames) */
-.blue-death { background-image: url('/characterSpriteSheet/Blue_Monster/Death.png'); animation: blue-death-anim 1.2s steps(8) 1 forwards; }
+.blue-death { background-image: url('/SpriteSheetTest/characterSpriteSheet/Blue_Monster/Death.png'); animation: blue-death-anim 1.2s steps(8) 1 forwards; }
 @keyframes blue-death-anim { 100% { background-position: -256px 0; } }
 
 
@@ -184,28 +184,28 @@ button:active:not(:disabled) {
 
 /* Idle (Looping, 4 frames) */
 .white-idle {
-  background-image: url('/characterSpriteSheet/White_Monster/Idle.png'); /* ADJUST PATH */
+  background-image: url('/SpriteSheetTest/characterSpriteSheet/White_Monster/Idle.png'); /* ADJUST PATH */
   animation: white-idle-anim 0.6s steps(4) infinite;
 }
 @keyframes white-idle-anim { 0% { background-position: 0 0; } 100% { background-position: -128px 0; } }
 
 /* Attack (Plays Once, 6 frames) */
 .white-attack {
-  background-image: url('/characterSpriteSheet/White_Monster/Attack.png'); /* ADJUST PATH */
+  background-image: url('/SpriteSheetTest/characterSpriteSheet/White_Monster/Attack.png'); /* ADJUST PATH */
   animation: white-attack-anim 0.8s steps(6) 1;
 }
 @keyframes white-attack-anim { 0% { background-position: 0 0; } 100% { background-position: -192px 0; } }
 
 /* Hurt (Plays Once, 4 frames) */
 .white-hurt {
-  background-image: url('/characterSpriteSheet/White_Monster/Hurt.png'); /* ADJUST PATH */
+  background-image: url('/SpriteSheetTest/characterSpriteSheet/White_Monster/Hurt.png'); /* ADJUST PATH */
   animation: white-hurt-anim 0.5s steps(4) 1;
 }
 @keyframes white-hurt-anim { 0% { background-position: 0 0; } 100% { background-position: -128px 0; } }
 
 /* Death (Stays on last frame, 8 frames) */
 .white-death {
-  background-image: url('/characterSpriteSheet/White_Monster/Death.png'); /* ADJUST PATH */
+  background-image: url('/SpriteSheetTest/characterSpriteSheet/White_Monster/Death.png'); /* ADJUST PATH */
   animation: white-death-anim 1.2s steps(8) 1 forwards;
 }
 @keyframes white-death-anim { 0% { background-position: 0 0; } 100% { background-position: -256px 0; } }
