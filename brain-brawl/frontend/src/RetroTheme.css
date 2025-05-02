@@ -5,6 +5,133 @@
   src: url('/assets/fonts/VT323-Regular.ttf') format('truetype');
 }
 
+/* Character Sprites */
+.character-selection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.character-selection h3 {
+  margin-bottom: 1rem;
+  color: white;
+  font-size: 24px;
+}
+
+.character-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.character-sprite {
+  width: 32px;
+  height: 32px;
+  transform: scale(4);
+  margin: 1.5rem 0;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  -ms-interpolation-mode: nearest-neighbor;
+}
+
+.character-select {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  font-family: 'VT323', monospace;
+  font-size: 20px;
+  min-width: 200px;
+  color: #001f4d;
+}
+
+/* Character display in game */
+.character-display {
+  margin: 1rem 0;
+  position: relative;
+  height: 100px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+.player-character, .opponent-character {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 150px;
+}
+
+.player-character-name, .opponent-character-name {
+  font-size: 18px;
+  margin-bottom: 0.3rem;
+  color: white;
+}
+
+.player-sprite-container, .opponent-sprite-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Health bars */
+.health-bar-container {
+  padding: 3px;
+  background-color: #555;
+  border: 2px solid #111;
+  display: inline-block;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  -ms-interpolation-mode: nearest-neighbor;
+  margin-bottom: 5px;
+  width: 100%;
+}
+
+.health-bar {
+  width: 100%;
+  height: 15px;
+  background-color: #cc0000;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #111;
+  --health-percent: 100%;
+}
+
+.health-bar__value {
+  background-color: #00ff00;
+  height: 100%;
+  width: var(--health-percent);
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition: width 0.2s linear;
+}
+
+.health-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+  text-align: center;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+  line-height: 15px;
+}
+
+.opponent-character .character-sprite {
+  transform: scaleX(-1) scale(4);
+}
+
 /* Retro styling elements */
 .retro-mode {
   font-family: 'VT323', monospace;
@@ -380,6 +507,82 @@
   50% { opacity: 0.5; }
   100% { opacity: 1; }
 }
+
+/* Character Sprite Animations */
+/* Pink Monster Animations */
+.pink-idle { 
+  background-image: url('/assets/sprites/Pink_Monster/Idle.png'); 
+  animation: pink-idle-anim 0.6s steps(4) infinite; 
+}
+@keyframes pink-idle-anim { 100% { background-position: -128px 0; } }
+
+.pink-attack { 
+  background-image: url('/assets/sprites/Pink_Monster/Attack.png'); 
+  animation: pink-attack-anim 0.8s steps(6) 1; 
+}
+@keyframes pink-attack-anim { 100% { background-position: -192px 0; } }
+
+.pink-hurt { 
+  background-image: url('/assets/sprites/Pink_Monster/Hurt.png'); 
+  animation: pink-hurt-anim 0.5s steps(4) 1; 
+}
+@keyframes pink-hurt-anim { 100% { background-position: -128px 0; } }
+
+.pink-death { 
+  background-image: url('/assets/sprites/Pink_Monster/Death.png'); 
+  animation: pink-death-anim 1.2s steps(8) 1 forwards; 
+}
+@keyframes pink-death-anim { 100% { background-position: -256px 0; } }
+
+/* Blue Monster Animations */
+.blue-idle { 
+  background-image: url('/assets/sprites/Blue_Monster/Idle.png'); 
+  animation: blue-idle-anim 0.6s steps(4) infinite; 
+}
+@keyframes blue-idle-anim { 100% { background-position: -128px 0; } }
+
+.blue-attack { 
+  background-image: url('/assets/sprites/Blue_Monster/Attack.png'); 
+  animation: blue-attack-anim 0.8s steps(6) 1; 
+}
+@keyframes blue-attack-anim { 100% { background-position: -192px 0; } }
+
+.blue-hurt { 
+  background-image: url('/assets/sprites/Blue_Monster/Hurt.png'); 
+  animation: blue-hurt-anim 0.5s steps(4) 1; 
+}
+@keyframes blue-hurt-anim { 100% { background-position: -128px 0; } }
+
+.blue-death { 
+  background-image: url('/assets/sprites/Blue_Monster/Death.png'); 
+  animation: blue-death-anim 1.2s steps(8) 1 forwards; 
+}
+@keyframes blue-death-anim { 100% { background-position: -256px 0; } }
+
+/* White Monster Animations */
+.white-idle { 
+  background-image: url('/assets/sprites/White_Monster/Idle.png');
+  animation: white-idle-anim 0.6s steps(4) infinite;
+}
+@keyframes white-idle-anim { 0% { background-position: 0 0; } 100% { background-position: -128px 0; } }
+
+.white-attack { 
+  background-image: url('/assets/sprites/White_Monster/Attack.png');
+  animation: white-attack-anim 0.8s steps(6) 1;
+}
+@keyframes white-attack-anim { 0% { background-position: 0 0; } 100% { background-position: -192px 0; } }
+
+.white-hurt { 
+  background-image: url('/assets/sprites/White_Monster/Hurt.png');
+  animation: white-hurt-anim 0.5s steps(4) 1;
+}
+@keyframes white-hurt-anim { 0% { background-position: 0 0; } 100% { background-position: -128px 0; } }
+
+.white-death { 
+  background-image: url('/assets/sprites/White_Monster/Death.png');
+  animation: white-death-anim 1.2s steps(8) 1 forwards;
+}
+@keyframes white-death-anim { 0% { background-position: 0 0; } 100% { background-position: -256px 0; } }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {

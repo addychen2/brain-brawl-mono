@@ -4,6 +4,7 @@ import { Socket } from 'socket.io-client';
 import Question from './Question';
 import RoundResults from './RoundResults';
 import GameOver from './GameOver';
+import CharacterDisplay from './CharacterDisplay';
 
 interface GameState {
   status: 'waiting' | 'starting' | 'active' | 'round_results' | 'game_over';
@@ -16,6 +17,12 @@ interface GameState {
   roundResults: any;
   gameResults: any;
   opponent: any;
+  playerCharacter: string;
+  opponentCharacter: string;
+  playerAnimation: 'idle' | 'attack' | 'hurt' | 'death';
+  opponentAnimation: 'idle' | 'attack' | 'hurt' | 'death';
+  playerHealth: number;
+  opponentHealth: number;
 }
 
 interface GameProps {
@@ -37,7 +44,13 @@ const Game = ({ socket, user }: GameProps) => {
     answerResult: null,
     roundResults: null,
     gameResults: null,
-    opponent: null
+    opponent: null,
+    playerCharacter: 'blue',
+    opponentCharacter: 'pink',
+    playerAnimation: 'idle',
+    opponentAnimation: 'idle',
+    playerHealth: 100,
+    opponentHealth: 100
   });
   
   const [error, setError] = useState('');
@@ -51,15 +64,30 @@ const Game = ({ socket, user }: GameProps) => {
       return;
     }
     
+    // Get character selection from localStorage if it exists
+    const savedCharacter = localStorage.getItem('selectedCharacter') || 'blue';
+    setGameState(prev => ({...prev, playerCharacter: savedCharacter}));
+    
     // Join the game room
-    socket.emit('join_game', { gameId, userId: user.userId });
+    socket.emit('join_game', { 
+      gameId, 
+      userId: user.userId,
+      character: savedCharacter 
+    });
     
     // Set up socket event listeners
     socket.on('game_state', (state) => {
+      // Look for player health in the state
+      const playerData = state.players?.find((p: any) => p.userId === user.userId);
+      const opponentData = state.players?.find((p: any) => p.userId !== user.userId);
+      
       setGameState(prevState => ({
         ...prevState,
         ...state,
-        status: 'waiting'
+        status: 'waiting',
+        opponentCharacter: state.opponent?.character || 'pink',
+        playerHealth: playerData?.health ?? 1000,
+        opponentHealth: opponentData?.health ?? 1000
       }));
     });
     
@@ -71,10 +99,19 @@ const Game = ({ socket, user }: GameProps) => {
     });
     
     socket.on('game_started', (state) => {
+      // Get player and opponent data including characters
+      const playerData = state.players?.find((p: any) => p.userId === user.userId);
+      const opponentData = state.players?.find((p: any) => p.userId !== user.userId);
+      
       setGameState(prevState => ({
         ...prevState,
         ...state,
-        status: 'active'
+        status: 'active',
+        // Ensure characters are correctly set from the game state
+        playerCharacter: playerData?.character || prevState.playerCharacter,
+        opponentCharacter: opponentData?.character || prevState.opponentCharacter,
+        playerHealth: playerData?.health ?? 1000,
+        opponentHealth: opponentData?.health ?? 1000
       }));
     });
     
@@ -119,7 +156,45 @@ const Game = ({ socket, user }: GameProps) => {
     // Listen for updates about other players answering
     socket.on('game_state_update', (update) => {
       console.log('Game state update:', update);
-      // We could use this to show which players have answered
+      
+      // If this contains game state data (from get_game_state request)
+      if (update.gameState) {
+        // Update with accurate health values from server
+        const state = update.gameState;
+        const playerData = state.players?.find((p: any) => p.userId === user.userId);
+        const opponentData = state.players?.find((p: any) => p.userId !== user.userId);
+        
+        if (playerData && opponentData) {
+          setGameState(prevState => ({
+            ...prevState,
+            playerHealth: playerData.health,
+            opponentHealth: opponentData.health
+          }));
+        }
+      }
+      // If this is the opponent answering and they answered correctly, show the effect
+      else if (update.playerId !== user.userId && update.isCorrect) {
+        // Show opponent attack animation
+        setGameState(prevState => ({
+          ...prevState,
+          opponentAnimation: 'attack',
+          playerAnimation: 'hurt'
+        }));
+        
+        // Estimate the damage (this is a rough estimate for immediate feedback)
+        const estimatedDamage = 100 + Math.floor(gameState.timeRemaining * 5);
+        
+        // Update health visually after a short delay
+        setTimeout(() => {
+          setGameState(prevState => ({
+            ...prevState,
+            opponentAnimation: 'idle',
+            playerAnimation: 'idle',
+            // Estimate damage to player's health
+            playerHealth: Math.max(0, prevState.playerHealth - estimatedDamage)
+          }));
+        }, 800);
+      }
     });
     
     socket.on('round_results', (results) => {
@@ -131,12 +206,60 @@ const Game = ({ socket, user }: GameProps) => {
         timerRef.current = null;
       }
       
-      setGameState(prevState => ({
-        ...prevState,
-        roundResults: results,
-        status: 'round_results',
-        timeRemaining: 0
-      }));
+      // Find player and opponent results to update health and show animations
+      const playerResult = results.playerResults.find((r: any) => r.userId === user.userId);
+      const opponentResult = results.playerResults.find((r: any) => r.userId !== user.userId);
+      
+      // First show animations
+      if (playerResult && playerResult.damageDealt > 0) {
+        // Player deals damage to opponent, show attack animation
+        setGameState(prevState => ({
+          ...prevState,
+          playerAnimation: 'attack',
+          opponentAnimation: 'hurt'
+        }));
+      }
+      
+      if (opponentResult && opponentResult.damageDealt > 0) {
+        // Opponent deals damage to player, show attack animation after a delay
+        setTimeout(() => {
+          setGameState(prevState => ({
+            ...prevState,
+            playerAnimation: 'hurt',
+            opponentAnimation: 'attack'
+          }));
+        }, 1000); // Delay opponent's attack animation
+      }
+      
+      // Reset animations and get accurate health from server after animations complete
+      setTimeout(() => {
+        // Get the game state to show the accurate health values
+        if (socket && gameId) {
+          socket.emit('get_game_state', { gameId });
+        }
+        
+        setGameState(prevState => {
+          // Look for any character updates in the results
+          const playerData = results.playerResults.find((r: any) => r.userId === user.userId);
+          const opponentData = results.playerResults.find((r: any) => r.userId !== user.userId);
+          
+          // Check if player or opponent health is zero to show death animation
+          // Use the current health after our immediate animations
+          const playerAnimation = prevState.playerHealth <= 0 ? 'death' : 'idle';
+          const opponentAnimation = prevState.opponentHealth <= 0 ? 'death' : 'idle';
+          
+          return {
+            ...prevState,
+            roundResults: results,
+            status: 'round_results',
+            timeRemaining: 0,
+            playerAnimation,
+            opponentAnimation,
+            playerCharacter: playerData?.character || prevState.playerCharacter,
+            opponentCharacter: opponentData?.character || prevState.opponentCharacter
+          };
+        });
+      }, 2000); // Update health after animations
     });
     
     socket.on('time_up', () => {
@@ -164,11 +287,22 @@ const Game = ({ socket, user }: GameProps) => {
         timerRef.current = null;
       }
       
+      // Find player data to display final health
+      const playerData = results.players.find((p: any) => p.userId === user.userId);
+      const opponentData = results.players.find((p: any) => p.userId !== user.userId);
+      
       setGameState(prevState => ({
         ...prevState,
         gameResults: results,
         status: 'game_over',
-        timeRemaining: 0
+        timeRemaining: 0,
+        playerHealth: playerData?.health ?? prevState.playerHealth,
+        opponentHealth: opponentData?.health ?? prevState.opponentHealth,
+        playerCharacter: playerData?.character || prevState.playerCharacter,
+        opponentCharacter: opponentData?.character || prevState.opponentCharacter,
+        // Set animations based on final health
+        playerAnimation: (playerData?.health <= 0) ? 'death' : 'idle',
+        opponentAnimation: (opponentData?.health <= 0) ? 'death' : 'idle'
       }));
     });
     
@@ -268,6 +402,31 @@ const Game = ({ socket, user }: GameProps) => {
   const handleSubmitAnswer = (answer: string) => {
     if (!socket || !gameId || gameState.answer) return;
     
+    // Calculate estimated points and damage for immediate feedback
+    const isCorrect = answer === gameState.question.correctAnswer;
+    const basePoints = 100;
+    const timeBonus = Math.floor(gameState.timeRemaining * 5); // 5 points per second
+    const estimatedPoints = isCorrect ? basePoints + timeBonus : 0;
+    
+    // Play attack animation when submitting an answer
+    setGameState(prevState => ({
+      ...prevState,
+      playerAnimation: 'attack',
+      // If answer is correct, show immediate visual feedback by updating opponent health
+      // This is just a visual preview - the server will provide the actual values later
+      opponentHealth: isCorrect ? 
+        Math.max(0, prevState.opponentHealth - estimatedPoints) : 
+        prevState.opponentHealth
+    }));
+    
+    // Reset to idle after animation completes
+    setTimeout(() => {
+      setGameState(prevState => ({
+        ...prevState,
+        playerAnimation: 'idle'
+      }));
+    }, 800);
+    
     // Submit answer to server
     socket.emit('submit_answer', {
       gameId,
@@ -313,15 +472,32 @@ const Game = ({ socket, user }: GameProps) => {
         
       case 'active':
         return (
-          <Question
-            question={gameState.question}
-            round={gameState.round}
-            totalRounds={gameState.totalRounds}
-            timeRemaining={gameState.timeRemaining}
-            onSubmitAnswer={handleSubmitAnswer}
-            selectedAnswer={gameState.answer}
-            answerResult={gameState.answerResult}
-          />
+          <>
+            <div className="character-display">
+              <CharacterDisplay 
+                character={gameState.playerCharacter}
+                name={user.username}
+                animationState={gameState.playerAnimation}
+                health={gameState.playerHealth}
+              />
+              <CharacterDisplay 
+                character={gameState.opponentCharacter}
+                name={gameState.opponent?.username || 'Opponent'}
+                isOpponent={true}
+                animationState={gameState.opponentAnimation}
+                health={gameState.opponentHealth}
+              />
+            </div>
+            <Question
+              question={gameState.question}
+              round={gameState.round}
+              totalRounds={gameState.totalRounds}
+              timeRemaining={gameState.timeRemaining}
+              onSubmitAnswer={handleSubmitAnswer}
+              selectedAnswer={gameState.answer}
+              answerResult={gameState.answerResult}
+            />
+          </>
         );
         
       case 'round_results':

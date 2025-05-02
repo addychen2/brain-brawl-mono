@@ -10,10 +10,12 @@ class TriviaGame {
             players: playerIds.map(id => ({
                 userId: id,
                 score: 0,
+                health: 1000, // Initial health value
                 currentAnswer: null,
                 answeredAt: null,
                 timeRemaining: null,
-                wantsRematch: false
+                wantsRematch: false,
+                character: 'blue' // Default character
             })),
             currentRound: 0,
             totalRounds: 10, // Set number of rounds
@@ -123,7 +125,8 @@ class TriviaGame {
         });
     }
     isGameOver() {
-        return this.gameState.currentRound > this.gameState.totalRounds;
+        // Game is over if any player has 0 or less health
+        return this.gameState.players.some(player => player.health <= 0);
     }
     endGame() {
         this.gameState.status = 'completed';
@@ -133,12 +136,20 @@ class TriviaGame {
         const question = this.gameState.currentQuestion;
         const playerResults = this.gameState.players.map(player => {
             const isCorrect = player.currentAnswer === question.correctAnswer;
+            const basePoints = 100;
+            const timeBonus = Math.floor((player.timeRemaining || 0) / 1000 * 5); // 5 points per second remaining
+            const pointsEarned = isCorrect ? basePoints + timeBonus : 0;
+            
+            // Calculate damage based on points earned (same as points)
+            const damageDealt = pointsEarned;
+            
             return {
                 userId: player.userId,
                 answer: player.currentAnswer,
                 isCorrect,
                 timeRemaining: player.timeRemaining,
-                pointsEarned: isCorrect ? 100 + Math.floor((player.timeRemaining || 0) / 1000 * 5) : 0
+                pointsEarned,
+                damageDealt
             };
         });
         return {
@@ -146,13 +157,61 @@ class TriviaGame {
             playerResults
         };
     }
+    
+    // Apply damage to the opponent player after a round
+    applyDamage() {
+        if (this.gameState.players.length !== 2) {
+            return; // Only handle 2-player games for now
+        }
+        
+        const player1 = this.gameState.players[0];
+        const player2 = this.gameState.players[1];
+        
+        // Get current round results
+        const roundResult = this.getRoundResults();
+        
+        // Find results for each player
+        const player1Result = roundResult.playerResults.find(r => r.userId === player1.userId);
+        const player2Result = roundResult.playerResults.find(r => r.userId === player2.userId);
+        
+        if (player1Result && player2Result) {
+            console.log(`Applying damage: Player ${player1.userId} deals ${player1Result.damageDealt} to Player ${player2.userId}`);
+            console.log(`Applying damage: Player ${player2.userId} deals ${player2Result.damageDealt} to Player ${player1.userId}`);
+            
+            // Player 1 damages Player 2
+            player2.health -= player1Result.damageDealt;
+            
+            // Player 2 damages Player 1
+            player1.health -= player2Result.damageDealt;
+            
+            // Ensure health doesn't go below 0
+            player1.health = Math.max(0, player1.health);
+            player2.health = Math.max(0, player2.health);
+            
+            console.log(`Health after damage: Player ${player1.userId}: ${player1.health}, Player ${player2.userId}: ${player2.health}`);
+        }
+    }
     getFinalResults() {
-        // Sort players by score
-        const sortedPlayers = [...this.gameState.players].sort((a, b) => b.score - a.score);
-        // Check if there's a tie for first place
-        const tie = sortedPlayers.length > 1 && sortedPlayers[0].score === sortedPlayers[1].score;
+        // In health-based game, winner is the one with health remaining
+        const playersWithHealth = this.gameState.players.filter(p => p.health > 0);
+        
+        // If nobody has health, sort by score (unlikely but as a fallback)
+        const sortedPlayers = playersWithHealth.length > 0 
+            ? playersWithHealth 
+            : [...this.gameState.players].sort((a, b) => b.score - a.score);
+        
+        // Check for a tie (both players died in the same round)
+        const tie = (playersWithHealth.length === 0 && sortedPlayers.length > 1 && 
+                    sortedPlayers[0].score === sortedPlayers[1].score) ||
+                    (playersWithHealth.length > 1);
+        
         return {
-            players: sortedPlayers.map(p => ({ userId: p.userId, score: p.score })),
+            players: sortedPlayers.map(p => ({ 
+                userId: p.userId, 
+                score: p.score,
+                health: p.health,
+                character: p.character 
+            })),
             winner: tie ? null : sortedPlayers[0].userId,
             tie
         };
