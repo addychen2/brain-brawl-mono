@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { BackButton } from '../common';
+import { playSound } from '../../utils/soundUtils';
 
 interface CharacterSelectionProps {
   onSelect: (character: string) => void;
@@ -15,6 +16,7 @@ const characters = [
 
 const CharacterSelection = ({ onSelect, selectedCharacter = 'blue', standalone = false }: CharacterSelectionProps) => {
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    playSound('ding');
     onSelect(e.target.value);
   };
 

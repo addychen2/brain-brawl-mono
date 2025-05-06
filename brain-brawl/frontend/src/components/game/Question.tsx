@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { playSound } from '../../utils/soundUtils';
 
 interface QuestionProps {
   question: {
@@ -88,7 +89,12 @@ const Question = ({
             <button
               key={index}
               className={getAnswerButtonStyle(answer)}
-              onClick={() => !selectedAnswer && onSubmitAnswer(answer)}
+              onClick={() => {
+                if (!selectedAnswer) {
+                  // The sound is handled in the Game component based on answer correctness
+                  onSubmitAnswer(answer);
+                }
+              }}
               disabled={!!selectedAnswer}
             >
               {formatText(answer)}

@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { BackButton } from '../common';
+import { playSound } from '../../utils/soundUtils';
 
 interface ModeSelectionProps {
   user: any | null;
@@ -9,6 +10,7 @@ const ModeSelection = ({ user }: ModeSelectionProps) => {
   const navigate = useNavigate();
 
   const handleNavigate = (path: string) => {
+    playSound('ding');
     navigate(path);
   };
 

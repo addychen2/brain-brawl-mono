@@ -243,9 +243,41 @@
   letter-spacing: 3px;
 }
 
+/* Ensure correct-answer and wrong-answer hover states override the general hover */
+.retro-button.correct-answer:hover {
+  background-color: rgba(92, 232, 92, 0.9);
+  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.5),
+              0 0 20px rgba(92, 232, 92, 0.7);
+  /* Keep the letter spacing and transform effects */
+  transform: translateY(-5px);
+  letter-spacing: 3px;
+}
+
+.retro-button.wrong-answer:hover {
+  background-color: rgba(255, 87, 87, 0.9);
+  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.5),
+              0 0 20px rgba(255, 87, 87, 0.7);
+  /* Keep the letter spacing and transform effects */
+  transform: translateY(-5px);
+  letter-spacing: 3px;
+}
+
 .retro-button:active {
   transform: translateY(2px);
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Active states for answer buttons */
+.retro-button.correct-answer:active {
+  transform: translateY(2px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3),
+              0 0 10px rgba(92, 232, 92, 0.5);
+}
+
+.retro-button.wrong-answer:active {
+  transform: translateY(2px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3),
+              0 0 10px rgba(255, 87, 87, 0.5);
 }
 
 /* Button shine effect */
@@ -345,8 +377,20 @@
   background-color: rgba(92, 232, 92, 0.8);
 }
 
+.correct-answer:hover {
+  background-color: rgba(92, 232, 92, 0.9);
+  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.5),
+              0 0 20px rgba(92, 232, 92, 0.7);
+}
+
 .wrong-answer {
   background-color: rgba(255, 87, 87, 0.8);
+}
+
+.wrong-answer:hover {
+  background-color: rgba(255, 87, 87, 0.9);
+  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.5),
+              0 0 20px rgba(255, 87, 87, 0.7);
 }
 
 .practice-results {
