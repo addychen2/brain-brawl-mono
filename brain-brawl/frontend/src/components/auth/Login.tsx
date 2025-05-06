@@ -26,7 +26,7 @@ const Login = ({ onLogin }: LoginProps) => {
     setIsLoading(true);
     
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001'}/api/auth/login`, {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/login`, {
         username,
         password
       });

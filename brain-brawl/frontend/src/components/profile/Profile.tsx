@@ -37,12 +37,12 @@ const Profile = ({ user }: ProfileProps) => {
       try {
         // Fetch profile data
         const profileResponse = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001'}/api/auth/profile/${user.userId}`
+          `${import.meta.env.VITE_BACKEND_URL}/api/auth/profile/${user.userId}`
         );
         
         // Fetch game history
         const historyResponse = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001'}/api/game/history/${user.userId}`
+          `${import.meta.env.VITE_BACKEND_URL}/api/game/history/${user.userId}`
         );
         
         setProfileData(profileResponse.data);

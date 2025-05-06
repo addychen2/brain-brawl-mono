@@ -32,7 +32,7 @@ const Register = ({ onRegister }: RegisterProps) => {
     setIsLoading(true);
     
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001'}/api/auth/register`, {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/register`, {
         username,
         password
       });

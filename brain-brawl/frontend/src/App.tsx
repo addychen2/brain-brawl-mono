@@ -35,11 +35,12 @@ function App() {
   useEffect(() => {
     // Connect to socket.io server if user is logged in
     if (user) {
-      const newSocket = io(import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001');
+      // Always use the provided IP address, never fall back to localhost
+      const newSocket = io(import.meta.env.VITE_BACKEND_URL);
       
       // Set up socket event listeners
       newSocket.on('connect', () => {
-        console.log('Connected to server');
+        console.log('Connected to server:', import.meta.env.VITE_BACKEND_URL);
       });
       
       newSocket.on('disconnect', () => {
