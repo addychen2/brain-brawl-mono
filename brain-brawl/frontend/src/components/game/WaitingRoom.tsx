@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Socket } from 'socket.io-client';
 import CharacterSelection from './CharacterSelection';
 import { BackButton } from '../common';
+import { playSound } from '../../utils/soundUtils';
 
 interface WaitingRoomProps {
   socket: Socket | null;
@@ -55,6 +56,9 @@ const WaitingRoom = ({ socket, user }: WaitingRoomProps) => {
       return;
     }
     
+    // Play ding sound effect when starting search
+    playSound('ding');
+    
     setIsSearching(true);
     setSearchTime(0);
     setError('');
@@ -65,6 +69,9 @@ const WaitingRoom = ({ socket, user }: WaitingRoomProps) => {
   };
   
   const handleCancelSearch = () => {
+    // Play ding sound effect when cancelling search
+    playSound('ding');
+    
     setIsSearching(false);
     
     // Implement cancel logic if needed

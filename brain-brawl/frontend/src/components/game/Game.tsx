@@ -5,6 +5,7 @@ import Question from './Question';
 import RoundResults from './RoundResults';
 import GameOver from './GameOver';
 import CharacterDisplay from './CharacterDisplay';
+import { playSound, playSoundMultiple, stopBackgroundMusic, startBackgroundMusic } from '../../utils/soundUtils';
 
 interface GameState {
   status: 'waiting' | 'starting' | 'active' | 'round_results' | 'game_over';
@@ -92,6 +93,9 @@ const Game = ({ socket, user }: GameProps) => {
     });
     
     socket.on('game_starting', () => {
+      // Play ready-set-go sound
+      playSound('readySetGo');
+      
       setGameState(prevState => ({
         ...prevState,
         status: 'starting'
@@ -142,6 +146,9 @@ const Game = ({ socket, user }: GameProps) => {
     });
     
     socket.on('answer_result', (result) => {
+      // NOTE: We don't play sounds here anymore because they're now played immediately when
+      // the answer is submitted in handleSubmitAnswer for better user feedback
+      
       setGameState(prevState => ({
         ...prevState,
         answerResult: result
@@ -181,6 +188,9 @@ const Game = ({ socket, user }: GameProps) => {
           playerAnimation: 'hurt'
         }));
         
+        // Play hit sound for opponent attacking player
+        playSoundMultiple('hit', 3, 200);
+        
         // Estimate the damage (this is a rough estimate for immediate feedback)
         const estimatedDamage = 100 + Math.floor(gameState.timeRemaining * 5);
         
@@ -218,6 +228,9 @@ const Game = ({ socket, user }: GameProps) => {
           playerAnimation: 'attack',
           opponentAnimation: 'hurt'
         }));
+        
+        // Play hit sound for player attacking opponent
+        playSoundMultiple('hit', 3, 200);
       }
       
       if (opponentResult && opponentResult.damageDealt > 0) {
@@ -228,6 +241,9 @@ const Game = ({ socket, user }: GameProps) => {
             playerAnimation: 'hurt',
             opponentAnimation: 'attack'
           }));
+          
+          // Play hit sound for opponent attacking player
+          playSoundMultiple('hit', 3, 200);
         }, 1000); // Delay opponent's attack animation
       }
       
@@ -280,6 +296,22 @@ const Game = ({ socket, user }: GameProps) => {
     
     socket.on('game_over', (results) => {
       console.log('Game over received:', results);
+      
+      // Determine if the current player is the winner
+      const isWinner = results.winner === user.userId;
+      const isTie = results.tie === true;
+      
+      // Play appropriate sound based on game outcome
+      if (isWinner) {
+        // Play victory sound for winner
+        playSound('success3');
+      } else if (isTie) {
+        // Play neutral sound for tie
+        playSound('ding');
+      } else {
+        // Play game over sound for loser
+        playSound('gameOver');
+      }
       
       // Clear the timer
       if (timerRef.current) {
@@ -408,7 +440,22 @@ const Game = ({ socket, user }: GameProps) => {
     const timeBonus = Math.floor(gameState.timeRemaining * 5); // 5 points per second
     const estimatedPoints = isCorrect ? basePoints + timeBonus : 0;
     
+    // Play initial sound based on correctness
+    if (isCorrect) {
+      playSound('success2');
+      
+      // If correct in multiplayer, also play hit sounds for damage
+      if (gameState.opponent) {
+        setTimeout(() => {
+          playSoundMultiple('hit', 3, 200);
+        }, 300);
+      }
+    } else {
+      playSound('wrong');
+    }
+    
     // Play attack animation when submitting an answer
+    // Don't play sounds here - they're already played above
     setGameState(prevState => ({
       ...prevState,
       playerAnimation: 'attack',

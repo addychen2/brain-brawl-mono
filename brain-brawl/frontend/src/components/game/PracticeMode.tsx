@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BackButton } from '../common';
+import { playSound } from '../../utils/soundUtils';
 
 // Mock question interface
 interface Question {
@@ -78,9 +79,15 @@ const PracticeMode = () => {
     
     const currentQuestion = mockQuestions[currentQuestionIndex];
     if (answer === currentQuestion.correctAnswer) {
+      // Play success sound for correct answer
+      playSound('success2');
+      
       // Award points based on time left - faster answers get more points
       const pointsEarned = Math.max(5, timeLeft);
       setScore(score + pointsEarned);
+    } else {
+      // Play wrong sound for incorrect answer
+      playSound('wrong');
     }
     
     // Move to next question after 2 seconds
@@ -92,11 +99,16 @@ const PracticeMode = () => {
         setSelectedOption(null);
       } else {
         setGameOver(true);
+        playSound('gameOver');
       }
     }, 2000);
   };
 
   const handlePlayAgain = () => {
+    // Play ding sound when clicking Play Again
+    playSound('ding');
+    
+    // Reset the game state
     setCurrentQuestionIndex(0);
     setScore(0);
     setTimeLeft(20);
@@ -118,8 +130,14 @@ const PracticeMode = () => {
             <p>you answered {score > 0 ? Math.ceil(score / 5) : 0} out of {mockQuestions.length} correctly!</p>
           </div>
           <button onClick={handlePlayAgain} className="retro-button">play again</button>
-          <button onClick={() => navigate('/mode-selection')} className="retro-button">back to mode selection</button>
-          <button onClick={() => navigate('/')} className="retro-button">back to home</button>
+          <button onClick={() => {
+            playSound('ding');
+            navigate('/mode-selection');
+          }} className="retro-button">back to mode selection</button>
+          <button onClick={() => {
+            playSound('ding');
+            navigate('/');
+          }} className="retro-button">back to home</button>
         </div>
       </div>
     );

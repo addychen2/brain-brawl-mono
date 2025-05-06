@@ -1,6 +1,7 @@
 import { useState, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { playSound } from '../../utils/soundUtils';
 
 interface LoginProps {
   onLogin: (user: any) => void;
@@ -16,6 +17,7 @@ const Login = ({ onLogin }: LoginProps) => {
   
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    playSound('ding');
     setError('');
     
     if (!username || !password) {
@@ -34,6 +36,8 @@ const Login = ({ onLogin }: LoginProps) => {
       const userData = response.data;
       
       onLogin(userData);
+      
+      // Use navigate instead of window.location to avoid page reload
       navigate('/');
     } catch (err: any) {
       setError(err.response?.data?.message || 'failed to login. please try again.');
@@ -43,6 +47,7 @@ const Login = ({ onLogin }: LoginProps) => {
   };
 
   const handleDemoLogin = () => {
+    playSound('ding');
     const demoUser = {
       userId: 'demo123',
       username: 'DemoUser',
@@ -94,7 +99,10 @@ const Login = ({ onLogin }: LoginProps) => {
             <p>don't have an account?</p>
             <button 
               type="button" 
-              onClick={() => navigate('/register')} 
+              onClick={() => {
+                playSound('ding');
+                navigate('/register');
+              }} 
               className="retro-button"
             >
               register
@@ -111,7 +119,10 @@ const Login = ({ onLogin }: LoginProps) => {
           
           <button 
             type="button"
-            onClick={() => navigate('/')}
+            onClick={() => {
+              playSound('ding');
+              navigate('/');
+            }}
             className="retro-button"
           >
             back to home

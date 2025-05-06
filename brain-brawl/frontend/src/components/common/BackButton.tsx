@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { playSound } from '../../utils/soundUtils';
 
 interface BackButtonProps {
   to?: string;
@@ -17,6 +18,9 @@ const BackButton = ({ to, label = 'back', className = '' }: BackButtonProps) => 
   const navigate = useNavigate();
   
   const handleClick = () => {
+    // Play ding sound when button is clicked
+    playSound('ding');
+    
     if (to) {
       navigate(to);
     } else {
