@@ -17,7 +17,7 @@ const Home = ({ user, retroMode = true }: HomeProps) => {
   // Always render in retro mode
   return (
     <div className="retro-content">
-      <h1 className="retro-title">brain brawl</h1>
+      <h1 className="retro-title" data-text="brain brawl">brain brawl</h1>
       
       {/* Login status indicator */}
       <div className="retro-login-status">
@@ -44,15 +44,6 @@ const Home = ({ user, retroMode = true }: HomeProps) => {
         </button>
         <button onClick={() => window.location.href = '/leaderboard'} className="retro-button">
           leaderboard
-        </button>
-        <button className="retro-button">
-          instructions
-        </button>
-        <button className="retro-button">
-          customize character
-        </button>
-        <button className="retro-button">
-          settings
         </button>
       </div>
     </div>

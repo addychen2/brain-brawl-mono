@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { BackButton } from '../common';
 
 // Mock question interface
 interface Question {
@@ -109,6 +110,7 @@ const PracticeMode = () => {
   if (gameOver) {
     return (
       <div className="retro-content">
+        <BackButton to="/mode-selection" className="back-button-top-left" />
         <h1 className="retro-title">game over</h1>
         <div className="retro-menu">
           <div className="practice-results">
@@ -125,6 +127,7 @@ const PracticeMode = () => {
 
   return (
     <div className="retro-content">
+      <BackButton to="/mode-selection" className="back-button-top-left" />
       <div className="practice-header">
         <h1 className="retro-title">practice mode</h1>
         <div className="practice-stats">

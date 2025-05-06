@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Socket } from 'socket.io-client';
 import CharacterSelection from './CharacterSelection';
+import { BackButton } from '../common';
 
 interface WaitingRoomProps {
   socket: Socket | null;
@@ -79,6 +80,7 @@ const WaitingRoom = ({ socket, user }: WaitingRoomProps) => {
   
   return (
     <div className="waiting-room-container">
+      <BackButton to="/" className="back-button-top-left" />
       <h1>Find a Match</h1>
       
       {error && <div className="error-message">{error}</div>}
@@ -96,31 +98,21 @@ const WaitingRoom = ({ socket, user }: WaitingRoomProps) => {
               onClick={handleCancelSearch}
               className="cancel-button"
             >
-              Cancel Search
+              cancel search
             </button>
           </>
         ) : (
           <>
-            <div className="waiting-image">
-              <span role="img" aria-label="Brain icon" className="brain-icon">
-                🧠
-              </span>
-            </div>
-            
             <CharacterSelection 
               onSelect={setSelectedCharacter} 
               selectedCharacter={selectedCharacter} 
             />
             
-            <p className="waiting-text">
-              Ready to test your knowledge? Select your character and click below to find an opponent!
-            </p>
-            
             <button 
               onClick={handleStartSearch}
               className="primary-button"
             >
-              Find Opponent
+              find opponent
             </button>
           </>
         )}
