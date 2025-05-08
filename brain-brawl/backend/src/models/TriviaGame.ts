@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 interface Question {
   id: string;
   question: string;
@@ -67,9 +69,28 @@ export class TriviaGame {
     
     // In a real implementation, you would fetch questions from an API
     // For now, we'll use placeholder questions
-    this.questions = this.getPlaceholderQuestions();
+    //this.questions = this.getPlaceholderQuestions();
+    this.fetchQuestions().then(fetchedQuestions => {
+      this.questions = fetchedQuestions;
+    }).catch(error => {
+      console.error('Error fetching questions:', error);
+    });
   }
   
+  private async fetchQuestions(): Promise<Question[]> {
+    try {
+      const response = await axios.get('http://localhost:5000/api/trivia/questions');
+      if (Array.isArray(response.data) && response.data.length > 0) {
+        return response.data;
+      } else {
+        throw new Error('No questions received from the server');
+      }
+    } catch (error) {
+      console.error('Failed to fetch questions:', error);
+      throw error;
+    }
+  }
+
   public getGameState(): GameState {
     // Return a copy to prevent external modification
     return { ...this.gameState };
