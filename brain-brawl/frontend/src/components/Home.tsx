@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { playSound } from '../utils/soundUtils';
 
 interface HomeProps {
@@ -7,7 +7,7 @@ interface HomeProps {
   toggleRetroMode?: () => void;
 }
 
-const Home = ({ user, retroMode = true }: HomeProps) => {
+const Home = ({ user }: HomeProps) => {
   const navigate = useNavigate();
   
   const handleButtonClick = (path: string) => {

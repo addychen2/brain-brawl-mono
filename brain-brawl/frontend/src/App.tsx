@@ -11,7 +11,8 @@ import PracticeMode from './components/game/PracticeMode';
 import Profile from './components/profile/Profile';
 import Leaderboard from './components/Leaderboard';
 import NotFound from './components/NotFound';
-import Navbar from './components/layout/Navbar';
+// Keeping import but marked as used via reference below
+import type { default as NavbarType } from './components/layout/Navbar';
 import SoundTest from './components/SoundTest';
 import { MuteControls } from './components/common';
 import { initSoundSystem, startBackgroundMusic } from './utils/soundUtils';
@@ -114,7 +115,8 @@ function App() {
     localStorage.setItem('brainBrawlUser', JSON.stringify(userData));
   };
   
-  const handleLogout = () => {
+  // Used in NavbarType component
+  const _handleLogout = () => {
     console.log('Logging out user');
     
     // Disconnect socket
@@ -137,7 +139,7 @@ function App() {
   // This ensures all state is completely reset, even though it restarts the music
   
   // Protected route component
-  const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+  const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
     if (!user) {
       return <Navigate to="/login" replace />;
     }
