@@ -15,6 +15,7 @@ interface PlayerState {
   answeredAt: number | null;
   timeRemaining: number | null;
   wantsRematch: boolean;
+  character: string; // Character type used for visual representation
 }
 
 interface GameState {
@@ -55,7 +56,8 @@ export class TriviaGame {
         currentAnswer: null,
         answeredAt: null,
         timeRemaining: null,
-        wantsRematch: false
+        wantsRematch: false,
+        character: 'blue' // Default character
       })),
       currentRound: 0,
       totalRounds: 10, // Keep track of total rounds for tracking purposes
@@ -98,25 +100,30 @@ export class TriviaGame {
     };
   }
   
-  public submitAnswer(userId: string, answer: string, timeRemaining: number): { isCorrect: boolean, pointsEarned: number } {
-    const playerIndex = this.gameState.players.findIndex(p => p.userId === userId);
+  public submitAnswer(userId: string, answer: string, timeRemaining: number): { isCorrect: boolean, pointsEarned: number, error?: string } {
+    // Log the player ID to help debug
+    console.log(`Submit answer from player: ${userId}`);
+    console.log(`Current players: ${JSON.stringify(this.gameState.players.map(p => p.userId))}`);
     
+    const playerIndex = this.gameState.players.findIndex(p => p.userId === userId);
     if (playerIndex === -1) {
-      throw new Error('Player not found');
+      console.error(`Player not found: ${userId}`);
+      // Instead of throwing error, return a result indicating player not found
+      return { isCorrect: false, pointsEarned: 0, error: 'Player not found' };
     }
     
     const player = this.gameState.players[playerIndex];
     
-    // If player already answered, ignore
+    // If player already answered, don't overwrite their answer
     if (player.currentAnswer !== null) {
-      return { isCorrect: false, pointsEarned: 0 };
+      console.log(`Player ${userId} already answered`);
+      return { isCorrect: false, pointsEarned: 0, error: 'Already answered' };
     }
     
     const currentQuestion = this.gameState.currentQuestion!;
     const isCorrect = answer === currentQuestion.correctAnswer;
     
     // Calculate points: base points + time bonus
-    // More time remaining = more points
     const basePoints = 100;
     const timeBonus = Math.floor(timeRemaining / 1000 * 5); // 5 points per second remaining
     const pointsEarned = isCorrect ? basePoints + timeBonus : 0;
@@ -126,6 +133,8 @@ export class TriviaGame {
     player.answeredAt = Date.now();
     player.timeRemaining = timeRemaining;
     player.score += pointsEarned;
+    
+    console.log(`Player ${userId} answered ${isCorrect ? 'correctly' : 'incorrectly'}, earned ${pointsEarned} points`);
     
     return { isCorrect, pointsEarned };
   }
@@ -239,7 +248,7 @@ export class TriviaGame {
   }
   
   public getFinalResults(): {
-    players: { userId: string, score: number, health: number }[],
+    players: { userId: string, score: number, health: number, character: string }[],
     winner: string | null,
     tie: boolean
   } {
@@ -257,7 +266,7 @@ export class TriviaGame {
                 (playersWithHealth.length > 1);
     
     return {
-      players: sortedPlayers.map(p => ({ userId: p.userId, score: p.score, health: p.health })),
+      players: sortedPlayers.map(p => ({ userId: p.userId, score: p.score, health: p.health, character: p.character })),
       winner: tie ? null : sortedPlayers[0].userId,
       tie
     };
