@@ -1,6 +1,5 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.TriviaGame = void 0;
+const axios = require('axios'); // Import axios for HTTP requests
+
 class TriviaGame {
     constructor(playerIds) {
         this.questions = [];
@@ -24,10 +23,25 @@ class TriviaGame {
             startTime: null,
             endTime: null
         };
-        // In a real implementation, you would fetch questions from an API
-        // For now, we'll use placeholder questions
-        this.questions = this.getPlaceholderQuestions();
+
+        // Fetch questions from trivia routes
+        this.fetchQuestions().then(fetchedQuestions => {
+            this.questions = fetchedQuestions;
+        }).catch(error => {
+            console.error('Error fetching questions:', error);
+        });
     }
+
+    async fetchQuestions() {
+        try {
+            const response = await axios.get('http://localhost:5000/api/trivia/questions'); // Replace with your trivia routes endpoint
+            return response.data; // Assuming the endpoint returns an array of questions
+        } catch (error) {
+            console.error('Failed to fetch questions:', error);
+            throw error;
+        }
+    }
+
     getGameState() {
         // Return a copy to prevent external modification
         return Object.assign({}, this.gameState);
