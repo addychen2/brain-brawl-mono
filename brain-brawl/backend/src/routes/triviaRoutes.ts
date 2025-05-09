@@ -3,25 +3,13 @@ import axios from 'axios';
 
 const router = express.Router();
 
-// Get random trivia questions
-router.get('/questions', async (req, res) => {
+// Replace with fixed URL for more variety of questions
+const QUESTIONS_URL = 'https://opentdb.com/api.php?amount=50&category=9&type=multiple';
+
+// Get trivia questions
+router.get('/questions', async (_req, res) => {
   try {
-    const amount = req.query.amount || 10;
-    const category = req.query.category || '';
-    const difficulty = req.query.difficulty || '';
-    
-    // Using Open Trivia Database API
-    let url = `https://opentdb.com/api.php?amount=${amount}&type=multiple`;
-    
-    if (category) {
-      url += `&category=${category}`;
-    }
-    
-    if (difficulty) {
-      url += `&difficulty=${difficulty}`;
-    }
-    
-    const response = await axios.get(url);
+    const response = await axios.get(QUESTIONS_URL);
     const data = response.data;
     
     if (data.response_code === 0) {
