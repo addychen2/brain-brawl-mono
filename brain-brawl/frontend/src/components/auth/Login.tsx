@@ -2,6 +2,7 @@ import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { playSound } from '../../utils/soundUtils';
+import { BackButton } from '../common';
 
 interface LoginProps {
   onLogin: (user: any) => void;
@@ -59,6 +60,7 @@ const Login = ({ onLogin }: LoginProps) => {
   
   return (
     <div className="retro-content">
+      <BackButton to="/" className="back-button-top-left" />
       <h1 className="retro-title">login</h1>
       
       <div className="retro-menu">
@@ -108,25 +110,6 @@ const Login = ({ onLogin }: LoginProps) => {
               register
             </button>
           </div>
-          
-          <button 
-            type="button"
-            onClick={handleDemoLogin}
-            className="retro-button retro-demo-button"
-          >
-            quick demo login
-          </button>
-          
-          <button 
-            type="button"
-            onClick={() => {
-              playSound('ding');
-              navigate('/');
-            }}
-            className="retro-button"
-          >
-            back to home
-          </button>
         </form>
       </div>
     </div>

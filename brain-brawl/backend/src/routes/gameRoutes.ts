@@ -36,18 +36,25 @@ router.get('/history/:userId', function(req: Request, res: Response) {
 });
 
 // Get leaderboard
-router.get('/leaderboard', function(req: Request, res: Response) {
+router.get('/leaderboard', async function(req: Request, res: Response) {
   try {
-    // In a real app: Fetch top players from database
+    // Import User model
+    const User = require('../models/User').default;
     
-    // For demo, return dummy leaderboard
-    const leaderboard = Array.from({ length: 10 }).map((_, index) => ({
-      userId: Math.random().toString(36).substring(2, 9),
-      username: `player_${Math.random().toString(36).substring(2, 5)}`,
+    // Get users sorted by score (highest first)
+    const users = await User.find({})
+      .sort({ score: -1 })
+      .limit(10)
+      .lean();
+    
+    // Format leaderboard data
+    const leaderboard = users.map((user, index) => ({
+      userId: user._id,
+      username: user.username,
       rank: index + 1,
-      score: 1000 - (index * 50) + Math.floor(Math.random() * 30),
-      gamesPlayed: Math.floor(Math.random() * 100) + 20,
-      winRate: Math.floor(Math.random() * 40) + 60
+      score: user.score,
+      gamesPlayed: user.gamesPlayed,
+      winRate: user.gamesPlayed > 0 ? Math.round((user.gamesWon / user.gamesPlayed) * 100) : 0
     }));
     
     res.json(leaderboard);

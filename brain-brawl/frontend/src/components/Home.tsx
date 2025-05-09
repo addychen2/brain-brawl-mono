@@ -56,9 +56,6 @@ const Home = ({ user }: HomeProps) => {
         <button onClick={() => handleButtonClick('/leaderboard')} className="retro-button">
           leaderboard
         </button>
-        <button onClick={() => handleButtonClick('/sound-test')} className="retro-button">
-          sound test
-        </button>
       </div>
     </div>
   );

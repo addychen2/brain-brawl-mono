@@ -1,10 +1,10 @@
 import express, { Request, Response } from 'express';
+import User from '../models/User';
 
 const router = express.Router();
 
-// Simple user registration
-// In a real app, you'd want to use proper authentication and store users in a database
-router.post('/register', function(req: Request, res: Response) {
+// User registration
+router.post('/register', async function(req: Request, res: Response) {
   try {
     const { username, password } = req.body;
     
@@ -13,12 +13,26 @@ router.post('/register', function(req: Request, res: Response) {
       return res.status(400).json({ message: 'Username and password are required' });
     }
     
-    // In a real app: Check if user exists, hash password, save to database
+    // Check if user already exists
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Username already exists' });
+    }
     
-    // For demo, just return success
-    res.status(201).json({ 
-      userId: Math.random().toString(36).substring(2, 15),
+    // Create new user
+    // Note: In a production app, you would hash the password first
+    const newUser = new User({
       username,
+      password, // In production, use: await bcrypt.hash(password, 10)
+    });
+    
+    // Save user to database
+    await newUser.save();
+    
+    // Return success without password
+    res.status(201).json({ 
+      userId: newUser._id,
+      username: newUser.username,
       message: 'User registered successfully' 
     });
   } catch (error) {
@@ -27,8 +41,8 @@ router.post('/register', function(req: Request, res: Response) {
   }
 });
 
-// Simple login
-router.post('/login', function(req: Request, res: Response) {
+// User login
+router.post('/login', async function(req: Request, res: Response) {
   try {
     const { username, password } = req.body;
     
@@ -37,12 +51,23 @@ router.post('/login', function(req: Request, res: Response) {
       return res.status(400).json({ message: 'Username and password are required' });
     }
     
-    // In a real app: Verify credentials against database
+    // Find user by username
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid username or password' });
+    }
     
-    // For demo, just return success with dummy user ID
+    // Verify password
+    // Note: In a production app, you would compare hashed passwords
+    const isPasswordValid = user.password === password; // In production, use: await bcrypt.compare(password, user.password)
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: 'Invalid username or password' });
+    }
+    
+    // Return user data
     res.json({ 
-      userId: Math.random().toString(36).substring(2, 15),
-      username,
+      userId: user._id,
+      username: user.username,
       message: 'Login successful' 
     });
   } catch (error) {
@@ -52,20 +77,28 @@ router.post('/login', function(req: Request, res: Response) {
 });
 
 // Get user profile
-router.get('/profile/:userId', function(req: Request, res: Response) {
+router.get('/profile/:userId', async function(req: Request, res: Response) {
   try {
     const { userId } = req.params;
     
-    // In a real app: Fetch user data from database
+    // Find user by ID
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
     
-    // For demo, return dummy profile
+    // Calculate win rate
+    const winRate = user.gamesPlayed > 0 ? Math.round((user.gamesWon / user.gamesPlayed) * 100) : 0;
+
+    // Return user profile
     res.json({
-      userId,
-      username: `user_${userId.substring(0, 5)}`,
+      userId: user._id,
+      username: user.username,
       stats: {
-        gamesPlayed: Math.floor(Math.random() * 50),
-        gamesWon: Math.floor(Math.random() * 30),
-        averageScore: Math.floor(Math.random() * 800) + 200
+        gamesPlayed: user.gamesPlayed,
+        gamesWon: user.gamesWon,
+        winRate: winRate,
+        score: user.score
       }
     });
   } catch (error) {
