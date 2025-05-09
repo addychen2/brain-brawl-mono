@@ -7,7 +7,7 @@ const router = express.Router();
 const QUESTIONS_URL = 'https://opentdb.com/api.php?amount=50&category=9&type=multiple';
 
 // Get trivia questions
-router.get('/questions', async (_req: Request, res: Response) => {
+router.get('/questions', async function(_req: Request, res: Response) {
   try {
     const response = await axios.get(QUESTIONS_URL);
     const data = response.data;
@@ -34,7 +34,7 @@ router.get('/questions', async (_req: Request, res: Response) => {
 });
 
 // Get trivia categories
-router.get('/categories', async (req: Request, res: Response) => {
+router.get('/categories', async function(req: Request, res: Response) {
   try {
     const response = await axios.get('https://opentdb.com/api_category.php');
     res.json(response.data.trivia_categories);

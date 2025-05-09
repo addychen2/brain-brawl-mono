@@ -30,7 +30,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/game', gameRoutes);
 
 // Health check route
-app.get('/health', (req: Request, res: Response) => {
+app.get('/health', function(req: Request, res: Response) {
   res.status(200).json({ status: 'ok' });
 });
 
