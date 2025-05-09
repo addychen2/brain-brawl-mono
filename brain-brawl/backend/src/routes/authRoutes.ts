@@ -1,10 +1,10 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 
 const router = express.Router();
 
 // Simple user registration
 // In a real app, you'd want to use proper authentication and store users in a database
-router.post('/register', (req, res) => {
+router.post('/register', (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
     
@@ -28,7 +28,7 @@ router.post('/register', (req, res) => {
 });
 
 // Simple login
-router.post('/login', (req, res) => {
+router.post('/login', (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
     
@@ -52,7 +52,7 @@ router.post('/login', (req, res) => {
 });
 
 // Get user profile
-router.get('/profile/:userId', (req, res) => {
+router.get('/profile/:userId', (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     

@@ -1,9 +1,9 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 
 const router = express.Router();
 
 // Get game history for a user
-router.get('/history/:userId', (req, res) => {
+router.get('/history/:userId', (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     
@@ -36,7 +36,7 @@ router.get('/history/:userId', (req, res) => {
 });
 
 // Get leaderboard
-router.get('/leaderboard', (req, res) => {
+router.get('/leaderboard', (req: Request, res: Response) => {
   try {
     // In a real app: Fetch top players from database
     

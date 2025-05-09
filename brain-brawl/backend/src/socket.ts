@@ -284,8 +284,8 @@ function handleDisconnect(socket: Socket) {
   }
   
   // Check if this player was in a game
-  let playerGameId = null;
-  let playerUserId = null;
+  let playerGameId: string | null = null;
+  let playerUserId: string | null = null;
   
   // Find the user ID for this socket
   for (const [id, gameId] of playerConnections.entries()) {
@@ -322,7 +322,7 @@ function handleDisconnect(socket: Socket) {
 }
 
 // Keep track of question timers so we can clear them if all players answer
-const questionTimers = new Map<string, NodeJS.Timeout>(); // gameId -> timer
+const questionTimers = new Map<string, ReturnType<typeof setTimeout>>(); // gameId -> timer
 
 // Send the next question to all players in a game
 function sendNextQuestion(io: Server, gameId: string) {

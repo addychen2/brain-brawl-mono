@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import axios from 'axios';
 
 const router = express.Router();
@@ -7,7 +7,7 @@ const router = express.Router();
 const QUESTIONS_URL = 'https://opentdb.com/api.php?amount=50&category=9&type=multiple';
 
 // Get trivia questions
-router.get('/questions', async (_req, res) => {
+router.get('/questions', async (_req: Request, res: Response) => {
   try {
     const response = await axios.get(QUESTIONS_URL);
     const data = response.data;
@@ -34,7 +34,7 @@ router.get('/questions', async (_req, res) => {
 });
 
 // Get trivia categories
-router.get('/categories', async (req, res) => {
+router.get('/categories', async (req: Request, res: Response) => {
   try {
     const response = await axios.get('https://opentdb.com/api_category.php');
     res.json(response.data.trivia_categories);
