@@ -648,9 +648,13 @@ const Game = ({ socket, user }: GameProps) => {
             </>
           ) : (
             <>
-              <p>game is starting!</p>
-              <p>get ready...</p>
-              <div className="retro-countdown">3</div>
+              <p className="game-starting-text">brain-brawl game is starting!</p>
+              <p className="get-ready-text">get ready...</p>
+              <div className="retro-countdown-sequence">
+                <div className="countdown-number">ready</div>
+                <div className="countdown-number">set</div>
+                <div className="countdown-number">go!</div>
+              </div>
             </>
           )}
           <button 
