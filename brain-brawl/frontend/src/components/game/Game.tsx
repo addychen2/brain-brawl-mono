@@ -76,17 +76,44 @@ const Game = ({ socket, user }: GameProps) => {
       character: savedCharacter 
     });
     
+    // Listen for match found event to get opponent info
+    socket.on('match_found', (data) => {
+      // Store opponent info
+      if (data.opponent) {
+        setGameState(prevState => ({
+          ...prevState,
+          opponent: data.opponent
+        }));
+      }
+    });
+    
     // Set up socket event listeners
     socket.on('game_state', (state) => {
       // Look for player health in the state
       const playerData = state.players?.find((p: any) => p.userId === user.userId);
       const opponentData = state.players?.find((p: any) => p.userId !== user.userId);
       
+      // If we don't have opponent username yet, try to get it from the User model
+      if (opponentData && (!gameState.opponent || !gameState.opponent.username)) {
+        // Keep track of opponent's userId at minimum
+        setGameState(prevState => ({
+          ...prevState,
+          opponent: {
+            ...prevState.opponent,
+            userId: opponentData.userId,
+            username: opponentData.userId // Temporarily use userId as username
+          }
+        }));
+        
+        // Try to get actual username from the server using User model
+        socket.emit('get_opponent_username', { opponentId: opponentData.userId });
+      }
+      
       setGameState(prevState => ({
         ...prevState,
         ...state,
         status: 'waiting',
-        opponentCharacter: state.opponent?.character || 'pink',
+        opponentCharacter: state.opponent?.character || opponentData?.character || 'pink',
         playerHealth: playerData?.health ?? 1000,
         opponentHealth: opponentData?.health ?? 1000
       }));
@@ -353,8 +380,22 @@ const Game = ({ socket, user }: GameProps) => {
       setError(`Your opponent (${data.userId}) has disconnected from the game.`);
     });
     
+    // Handle opponent username response
+    socket.on('opponent_username', (data) => {
+      // Update opponent username in game state
+      setGameState(prevState => ({
+        ...prevState,
+        opponent: {
+          ...prevState.opponent,
+          userId: data.userId,
+          username: data.username
+        }
+      }));
+    });
+    
     // Clean up on unmount
     return () => {
+      socket.off('match_found');
       socket.off('game_state');
       socket.off('game_starting');
       socket.off('game_started');
@@ -367,6 +408,7 @@ const Game = ({ socket, user }: GameProps) => {
       socket.off('rematch_requested');
       socket.off('rematch_created');
       socket.off('player_disconnected');
+      socket.off('opponent_username');
     };
   
     // Add a cleanup function to clear the timer when the component unmounts

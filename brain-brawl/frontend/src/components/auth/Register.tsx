@@ -1,6 +1,8 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { BackButton } from '../common';
+import { playSound } from '../../utils/soundUtils';
 
 interface RegisterProps {
   onRegister: (user: any) => void;
@@ -50,6 +52,7 @@ const Register = ({ onRegister }: RegisterProps) => {
   
   return (
     <div className="retro-content">
+      <BackButton to="/" className="back-button-top-left" />
       <h1 className="retro-title">register</h1>
       
       <div className="retro-menu">
@@ -103,20 +106,15 @@ const Register = ({ onRegister }: RegisterProps) => {
             <p>already have an account?</p>
             <button 
               type="button" 
-              onClick={() => navigate('/login')} 
+              onClick={() => {
+                playSound('ding');
+                navigate('/login');
+              }} 
               className="retro-button"
             >
               login
             </button>
           </div>
-          
-          <button 
-            type="button"
-            onClick={() => navigate('/')}
-            className="retro-button"
-          >
-            back to home
-          </button>
         </form>
       </div>
     </div>

@@ -320,19 +320,28 @@ export class TriviaGame {
     // In health-based game, winner is the one with health remaining
     const playersWithHealth = this.gameState.players.filter(p => p.health > 0);
     
-    // If nobody has health, sort by score (unlikely but as a fallback)
-    const sortedPlayers = playersWithHealth.length > 0 
-      ? playersWithHealth 
-      : [...this.gameState.players].sort((a, b) => b.score - a.score);
+    // Sort all players by score for ranking purposes
+    const allPlayersSorted = [...this.gameState.players].sort((a, b) => b.score - a.score);
+    
+    // Determine winner from players with health
+    const winnerPlayers = playersWithHealth.length > 0 
+      ? [...playersWithHealth].sort((a, b) => b.score - a.score)
+      : allPlayersSorted;
     
     // Check for a tie (both players died in the same round)
-    const tie = (playersWithHealth.length === 0 && sortedPlayers.length > 1 && 
-                sortedPlayers[0].score === sortedPlayers[1].score) ||
+    const tie = (playersWithHealth.length === 0 && winnerPlayers.length > 1 && 
+                winnerPlayers[0].score === winnerPlayers[1].score) ||
                 (playersWithHealth.length > 1);
     
     return {
-      players: sortedPlayers.map(p => ({ userId: p.userId, score: p.score, health: p.health, character: p.character })),
-      winner: tie ? null : sortedPlayers[0].userId,
+      // Important: include ALL players in results, not just winners
+      players: allPlayersSorted.map(p => ({ 
+        userId: p.userId, 
+        score: p.score, 
+        health: p.health, 
+        character: p.character 
+      })),
+      winner: tie ? null : winnerPlayers[0].userId,
       tie
     };
   }
