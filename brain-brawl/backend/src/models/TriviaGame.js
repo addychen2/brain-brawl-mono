@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TriviaGame = void 0;
+const axios = require('axios'); // Import axios for HTTP requests
 class TriviaGame {
     constructor(playerIds) {
         this.questions = [];
@@ -18,16 +19,64 @@ class TriviaGame {
                 character: 'blue' // Default character
             })),
             currentRound: 0,
-            totalRounds: 10, // Keep track of total rounds for tracking purposes
+            totalRounds: 999999, // Set essentially unlimited rounds - game ends when player dies
             currentQuestion: null,
             status: 'waiting',
             startTime: null,
             endTime: null
         };
-        // In a real implementation, you would fetch questions from an API
-        // For now, we'll use placeholder questions
-        this.questions = this.getPlaceholderQuestions();
+        // Start with empty questions array
+        this.questions = [];
+        
+        // Immediately fetch questions from API
+        this.fetchQuestions().then(fetchedQuestions => {
+            if (fetchedQuestions && fetchedQuestions.length > 0) {
+                console.log(`Successfully fetched ${fetchedQuestions.length} questions from API`);
+                this.questions = fetchedQuestions;
+                
+                // If game has already started, update current question
+                if (this.gameState.status === 'active' && this.gameState.currentRound > 0) {
+                    this.gameState.currentQuestion = this.questions[this.gameState.currentRound - 1];
+                }
+            } else {
+                // Fall back to placeholder questions if API returns empty
+                console.log('No questions from API, using placeholders');
+                this.questions = this.getPlaceholderQuestions();
+            }
+        }).catch(error => {
+            console.error('Error fetching questions:', error);
+            // Fall back to placeholder questions on error
+            this.questions = this.getPlaceholderQuestions();
+        });
     }
+    async fetchQuestions() {
+        try {
+            // Fetch directly from Open Trivia Database API instead of local server
+            const response = await axios.get('https://opentdb.com/api.php?amount=50&category=9&type=multiple');
+            
+            if (response && response.data && response.data.response_code === 0 && Array.isArray(response.data.results)) {
+                // Format questions to match our Question interface
+                const formattedQuestions = response.data.results.map((q, index) => ({
+                    id: index.toString(),
+                    question: q.question,
+                    correctAnswer: q.correct_answer,
+                    incorrectAnswers: q.incorrect_answers,
+                    category: q.category,
+                    difficulty: q.difficulty
+                }));
+                
+                console.log(`Successfully fetched ${formattedQuestions.length} questions from Open Trivia DB`);
+                return formattedQuestions;
+            } else {
+                console.warn('Unexpected response format from Open Trivia DB API');
+                return [];
+            }
+        } catch (error) {
+            console.error('Failed to fetch questions from Open Trivia DB:', error);
+            return []; // Return empty array instead of throwing to avoid crashing
+        }
+    }
+    
     getGameState() {
         // Return a copy to prevent external modification
         return Object.assign({}, this.gameState);
@@ -42,7 +91,15 @@ class TriviaGame {
         this.gameState.status = 'active';
         this.gameState.startTime = Date.now();
         this.gameState.currentRound = 1;
+        
+        // Make sure we have questions loaded
+        if (this.questions.length === 0) {
+            console.warn('No questions available at game start, using placeholders');
+            this.questions = this.getPlaceholderQuestions();
+        }
+        
         this.gameState.currentQuestion = this.questions[0];
+        console.log(`Game started with ${this.questions.length} available questions`);
     }
     getCurrentQuestion() {
         return {
@@ -91,21 +148,30 @@ class TriviaGame {
     moveToNextQuestion() {
         // Save current round results
         this.saveRoundResults();
+        
+        // Check if game is over due to player health
+        if (this.isGameOver()) {
+            this.endGame();
+            return;
+        }
+        
         // Reset player answers for next question
         this.gameState.players.forEach(player => {
             player.currentAnswer = null;
             player.answeredAt = null;
             player.timeRemaining = null;
         });
+        
         // Move to next round
         this.gameState.currentRound++;
-        // Set next question or end game if all questions answered
-        if (this.gameState.currentRound <= this.gameState.totalRounds) {
-            this.gameState.currentQuestion = this.questions[this.gameState.currentRound - 1];
-        }
-        else {
-            this.endGame();
-        }
+        
+        // Calculate question index - cycle through available questions if needed
+        let questionIndex = (this.gameState.currentRound - 1) % this.questions.length;
+        
+        // Set next question
+        this.gameState.currentQuestion = this.questions[questionIndex];
+        
+        console.log(`Moving to round ${this.gameState.currentRound}, using question index ${questionIndex}`);
     }
     timeUp() {
         // Mark any unanswered questions

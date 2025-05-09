@@ -15,21 +15,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const axios_1 = __importDefault(require("axios"));
 const router = express_1.default.Router();
-// Get random trivia questions
-router.get('/questions', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+// Replace this with your fixed questions URL
+const QUESTIONS_URL = 'https://opentdb.com/api.php?amount=50&category=9&type=multiple';
+
+// Get trivia questions
+router.get('/questions', (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const amount = req.query.amount || 10;
-        const category = req.query.category || '';
-        const difficulty = req.query.difficulty || '';
-        // Using Open Trivia Database API
-        let url = `https://opentdb.com/api.php?amount=${amount}&type=multiple`;
-        if (category) {
-            url += `&category=${category}`;
-        }
-        if (difficulty) {
-            url += `&difficulty=${difficulty}`;
-        }
-        const response = yield axios_1.default.get(url);
+        const response = yield axios_1.default.get(QUESTIONS_URL);
         const data = response.data;
         if (data.response_code === 0) {
             // Format questions for our application
