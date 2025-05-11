@@ -151,7 +151,7 @@ export const setupSocketConnection = (io: Server) => {
               game.moveToNextQuestion();
               sendNextQuestion(io, gameId);
             }
-          }, 5000);
+          }, 5000); // 5 seconds (original pace)
         }
       } catch (error: any) {
         console.error(`Error processing answer: ${error.message}`);
@@ -514,9 +514,9 @@ function sendNextQuestion(io: Server, gameId: string) {
             game.moveToNextQuestion();
             sendNextQuestion(io, gameId);
           }
-        }, 5000);
+        }, 5000); // 5 seconds (original pace)
       }
-    }, 20000); // Exactly 20 seconds per question
+    }, 10000); // Exactly 10 seconds per question
     
     // Store the timer so we can clear it if all players answer before time's up
     questionTimers.set(gameId, timer);

@@ -180,7 +180,7 @@ const Game = ({ socket, user }: GameProps) => {
         question: data.question,
         round: data.round,
         totalRounds: data.totalRounds,
-        timeRemaining: 20,
+        timeRemaining: 10,
         answer: null,
         answerResult: null,
         status: 'active'
@@ -475,7 +475,7 @@ const Game = ({ socket, user }: GameProps) => {
     // Reset timer
     setGameState(prevState => ({
       ...prevState,
-      timeRemaining: 20
+      timeRemaining: 10
     }));
     
     // Start countdown
@@ -694,17 +694,47 @@ const Game = ({ socket, user }: GameProps) => {
     return (
       <div className="retro-content">
         <h1 className="retro-title">brain brawl</h1>
+
+
         <div className="retro-menu">
           {gameState.status === 'waiting' ? (
             <>
               <p>waiting for opponent...</p>
               <p className="retro-game-id">game id: {gameId}</p>
               <div className="retro-loader"></div>
+
+              {/* Keep player vs info at the bottom for waiting screen */}
+              <div className="retro-player-vs" style={{ marginTop: '20px' }}>
+                <div className="retro-player">
+                  <p>{user.username}</p>
+                </div>
+                <div className="retro-vs">vs</div>
+                <div className="retro-opponent">
+                  <p>{gameState.opponent ? gameState.opponent.username : 'waiting...'}</p>
+                </div>
+              </div>
             </>
           ) : (
             <>
-              <p className="game-starting-text">brain-brawl game is starting!</p>
-              <p className="get-ready-text">get ready...</p>
+              {/* Player vs Player title inside the card, above the get ready text */}
+              <div className="retro-player-vs" style={{
+                fontSize: '1.8rem',
+                margin: '0 auto 20px auto',
+                display: 'flex',
+                justifyContent: 'center',
+                width: '100%'
+              }}>
+                <div className="retro-player">
+                  <p style={{ fontWeight: 'bold' }}>{user.username}</p>
+                </div>
+                <div className="retro-vs" style={{ margin: '0 15px', fontSize: '2rem' }}>vs</div>
+                <div className="retro-opponent">
+                  <p style={{ fontWeight: 'bold' }}>{gameState.opponent ? gameState.opponent.username : 'waiting...'}</p>
+                </div>
+              </div>
+
+              <p className="game-starting-text" style={{ fontSize: '1.6rem' }}>brain-brawl game is starting!</p>
+              <p className="get-ready-text" style={{ fontSize: '1.5rem' }}>get ready...</p>
               <div className="retro-countdown-sequence">
                 <div className="countdown-number">ready</div>
                 <div className="countdown-number">set</div>
@@ -712,22 +742,12 @@ const Game = ({ socket, user }: GameProps) => {
               </div>
             </>
           )}
-          <button 
-            onClick={() => navigate('/')} 
+          <button
+            onClick={() => navigate('/')}
             className="retro-button"
           >
             cancel and return home
           </button>
-        </div>
-        
-        <div className="retro-player-vs">
-          <div className="retro-player">
-            <p>{user.username}</p>
-          </div>
-          <div className="retro-vs">vs</div>
-          <div className="retro-opponent">
-            <p>{gameState.opponent ? gameState.opponent.username : 'waiting...'}</p>
-          </div>
         </div>
       </div>
     );

@@ -74,7 +74,7 @@ const Question = ({
       <div className="practice-header">
         <h1 className="retro-title">brain brawl</h1>
         <div className="practice-stats">
-          <p>round: {round}/{totalRounds}</p>
+          {/* Removed round indicator as requested */}
           <p>category: {question.category}</p>
           <p className={timeRemaining <= 5 ? 'time-low' : ''}>time: {timeRemaining}s</p>
         </div>

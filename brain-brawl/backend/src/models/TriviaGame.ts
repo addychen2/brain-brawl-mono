@@ -183,7 +183,7 @@ export class TriviaGame {
     
     // Calculate points: base points + time bonus
     const basePoints = 100;
-    const timeBonus = Math.floor(timeRemaining / 1000 * 5); // 5 points per second remaining
+    const timeBonus = Math.floor(timeRemaining / 1000 * 10); // 10 points per second remaining (adjusted for 10 second timer)
     const pointsEarned = isCorrect ? basePoints + timeBonus : 0;
     
     // Update player state
@@ -261,7 +261,7 @@ export class TriviaGame {
     const playerResults = this.gameState.players.map(player => {
       const isCorrect = player.currentAnswer === question.correctAnswer;
       const basePoints = 100;
-      const timeBonus = Math.floor((player.timeRemaining || 0) / 1000 * 5); // 5 points per second remaining
+      const timeBonus = Math.floor((player.timeRemaining || 0) / 1000 * 10); // 10 points per second remaining (adjusted for 10 second timer)
       const pointsEarned = isCorrect ? basePoints + timeBonus : 0;
       
       // Calculate damage based on points earned (same as points)
