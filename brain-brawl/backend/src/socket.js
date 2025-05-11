@@ -103,7 +103,12 @@ const setupSocketConnection = (io) => {
                     setTimeout(() => {
                         // If game is over, send final results
                         if (game.isGameOver()) {
-                            io.to(gameId).emit('game_over', game.getFinalResults());
+                            const finalResults = game.getFinalResults();
+                            io.to(gameId).emit('game_over', finalResults);
+
+                            // Update player stats in database
+                            updatePlayerStats(finalResults);
+
                             // Clean up the game
                             activeGames.delete(gameId);
                             game.getPlayerIds().forEach(id => playerConnections.delete(id));
@@ -129,12 +134,37 @@ const setupSocketConnection = (io) => {
             const { gameId, userId } = data;
             const game = activeGames.get(gameId);
             if (game) {
+                // Update player's rematch status
                 game.requestRematch(userId);
+
+                // Get opponent ID to provide more context in notification
+                const playerIds = game.getPlayerIds();
+                const opponentId = playerIds.find(id => id !== userId);
+
+                // Send updated rematch status to all players with info about who requested
+                io.to(gameId).emit('rematch_requested', {
+                    userId,
+                    message: `Player ${userId} requested a rematch`,
+                    playersWantingRematch: game.getGameState().players
+                        .filter(p => p.wantsRematch)
+                        .map(p => p.userId)
+                });
+
                 // If all players want a rematch, create a new game
                 if (game.allPlayersWantRematch()) {
                     const playerIds = game.getPlayerIds();
                     const newGame = new TriviaGame_1.TriviaGame(playerIds);
                     const newGameId = generateGameId();
+
+                    // Copy character data from the original game
+                    const oldGameState = game.getGameState();
+                    oldGameState.players.forEach(player => {
+                        const newPlayerIndex = newGame.getGameState().players.findIndex(p => p.userId === player.userId);
+                        if (newPlayerIndex !== -1) {
+                            newGame.getGameState().players[newPlayerIndex].character = player.character;
+                        }
+                    });
+
                     activeGames.set(newGameId, newGame);
                     // Update player connections to point to new game
                     playerIds.forEach(id => playerConnections.set(id, newGameId));
@@ -142,13 +172,6 @@ const setupSocketConnection = (io) => {
                     io.to(gameId).emit('rematch_created', {
                         newGameId,
                         message: 'All players accepted rematch. New game created!'
-                    });
-                }
-                else {
-                    // Let players know someone requested a rematch
-                    io.to(gameId).emit('rematch_requested', {
-                        userId,
-                        message: `Player ${userId} requested a rematch`
                     });
                 }
             }
@@ -212,10 +235,25 @@ function findMatch(socket, playerData, io) {
             waitingPlayers.delete(opponent.id);
             socket.leave('waiting_room');
             opponent.leave('waiting_room');
-            // Notify both players about the match
-            io.to(socket.id).to(opponent.id).emit('match_found', {
+            // Notify both players about the match with opponent information
+            io.to(socket.id).emit('match_found', {
                 gameId,
-                message: 'Match found! Joining game...'
+                message: 'Match found! Joining game...',
+                opponent: {
+                    userId: opponentId,
+                    username: opponentId, // Using userId as username initially
+                    character: opponentCharacter
+                }
+            });
+
+            io.to(opponent.id).emit('match_found', {
+                gameId,
+                message: 'Match found! Joining game...',
+                opponent: {
+                    userId: userId,
+                    username: userId, // Using userId as username initially
+                    character: character
+                }
             });
             // Log the created game and players
             console.log(`Game ${gameId} created with players: ${game.getPlayerIds().join(', ')}`);
@@ -303,7 +341,12 @@ function sendNextQuestion(io, gameId) {
                 // Move to next question after a delay
                 setTimeout(() => {
                     if (game.isGameOver()) {
-                        io.to(gameId).emit('game_over', game.getFinalResults());
+                        const finalResults = game.getFinalResults();
+                        io.to(gameId).emit('game_over', finalResults);
+
+                        // Update player stats in database
+                        updatePlayerStats(finalResults);
+
                         // Clean up
                         activeGames.delete(gameId);
                         game.getPlayerIds().forEach(id => playerConnections.delete(id));
@@ -322,4 +365,79 @@ function sendNextQuestion(io, gameId) {
 // Generate a unique game ID
 function generateGameId() {
     return Math.random().toString(36).substring(2, 9);
+}
+
+// Update player stats when a game ends
+async function updatePlayerStats(results) {
+    try {
+        console.log('Starting to update player stats with results:', JSON.stringify(results));
+
+        // Try to import User model
+        let User;
+        try {
+            User = require('./models/User').default;
+        } catch (error) {
+            console.log('User model not found, cannot update player stats');
+            return;
+        }
+
+        // Check if we have players data
+        if (!results || !results.players || !Array.isArray(results.players)) {
+            console.error('Invalid game results, cannot update player stats');
+            return;
+        }
+
+        // Determine winner (if no tie)
+        const tie = results.tie === true;
+        const winnerId = tie ? null : results.winner;
+        console.log(`Game result - Tie: ${tie}, Winner: ${winnerId}`);
+        console.log(`Players to update: ${results.players.length}`);
+
+        // Update stats for each player
+        for (const player of results.players) {
+            try {
+                const playerId = player.userId;
+                const isWinner = playerId === winnerId;
+
+                console.log(`Processing player ID: ${playerId} (Winner: ${isWinner})`);
+
+                // Create update operation
+                const updateOperation = {
+                    $inc: {
+                        gamesPlayed: 1,
+                        gamesWon: isWinner ? 1 : 0,
+                        gamesLost: isWinner ? 0 : 1,
+                        score: player.score || 0
+                    }
+                };
+
+                // Try to update by ID
+                try {
+                    const updateResult = await User.findByIdAndUpdate(
+                        playerId,
+                        updateOperation,
+                        { new: true }
+                    );
+
+                    if (updateResult) {
+                        console.log(`Successfully updated stats for user ID ${playerId}:`);
+                        console.log(`- Games Played: ${updateResult.gamesPlayed}`);
+                        console.log(`- Games Won: ${updateResult.gamesWon}`);
+                        console.log(`- Games Lost: ${updateResult.gamesLost}`);
+                        console.log(`- Score: ${updateResult.score}`);
+                    } else {
+                        console.log(`Could not find user with ID ${playerId}`);
+                    }
+                } catch (error) {
+                    console.error(`Error updating user with ID ${playerId}:`, error);
+                }
+            } catch (error) {
+                console.error(`Error processing player ${player.userId}:`, error);
+            }
+        }
+
+        console.log('Player stats update complete');
+    } catch (error) {
+        console.error('Error updating player stats:', error);
+    }
 }

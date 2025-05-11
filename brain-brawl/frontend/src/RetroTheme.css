@@ -735,6 +735,18 @@
   margin-top: 20px;
 }
 
+.retro-rematch-waiting {
+  background-color: rgba(0, 31, 77, 0.8);
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 15px;
+  color: white;
+  text-align: center;
+  font-family: 'VT323', monospace;
+  font-size: 24px;
+  animation: pulse 2s infinite;
+}
+
 .retro-correct-answer {
   color: #4caf50;
   font-weight: bold;

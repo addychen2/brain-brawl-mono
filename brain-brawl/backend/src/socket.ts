@@ -129,13 +129,24 @@ export const setupSocketConnection = (io: Server) => {
             if (game.isGameOver()) {
               const finalResults = game.getFinalResults();
               io.to(gameId).emit('game_over', finalResults);
-              
+
               // Update player stats in database
               updatePlayerStats(finalResults);
-              
-              // Clean up the game
-              activeGames.delete(gameId);
-              game.getPlayerIds().forEach(id => playerConnections.delete(id));
+
+              // Mark game as completed but don't remove it yet
+              // We need to keep it for rematch functionality
+              game.getGameState().status = 'completed';
+
+              // Set a 5-minute timeout to clean up the game if no rematch happens
+              setTimeout(() => {
+                // Check if game still exists and is still in completed state
+                const gameToCleanup = activeGames.get(gameId);
+                if (gameToCleanup && gameToCleanup.getGameState().status === 'completed') {
+                  console.log(`Cleaning up inactive game ${gameId} after timeout`);
+                  activeGames.delete(gameId);
+                  gameToCleanup.getPlayerIds().forEach(id => playerConnections.delete(id));
+                }
+              }, 5 * 60 * 1000); // 5 minutes
             } else {
               game.moveToNextQuestion();
               sendNextQuestion(io, gameId);
@@ -154,35 +165,79 @@ export const setupSocketConnection = (io: Server) => {
 
     // Handle player rematch request
     socket.on('rematch_request', (data: { gameId: string, userId: string }) => {
+      console.log(`Received rematch request - Game ID: ${data.gameId}, User ID: ${data.userId}`);
+
       const { gameId, userId } = data;
       const game = activeGames.get(gameId);
-      
+
       if (game) {
+        console.log(`Game found. Current rematch status:`);
+        game.getGameState().players.forEach(p => {
+          console.log(`- Player ${p.userId}: wantsRematch=${p.wantsRematch}`);
+        });
+
+        // Update player's rematch status
+        console.log(`Updating rematch status for player ${userId}`);
         game.requestRematch(userId);
-        
+
+        // Get opponent ID to provide more context in notification
+        const playerIds = game.getPlayerIds();
+        const opponentId = playerIds.find(id => id !== userId);
+        console.log(`Opponent ID: ${opponentId}`);
+
+        // Log updated rematch status
+        console.log(`Updated rematch status:`);
+        game.getGameState().players.forEach(p => {
+          console.log(`- Player ${p.userId}: wantsRematch=${p.wantsRematch}`);
+        });
+
+        // Send updated rematch status to all players with info about who requested
+        console.log(`Emitting rematch_requested event to game ${gameId}`);
+        io.to(gameId).emit('rematch_requested', {
+          userId,
+          message: `Player ${userId} requested a rematch`,
+          playersWantingRematch: game.getGameState().players
+            .filter(p => p.wantsRematch)
+            .map(p => p.userId)
+        });
+
         // If all players want a rematch, create a new game
         if (game.allPlayersWantRematch()) {
+          console.log(`All players want rematch. Creating new game...`);
           const playerIds = game.getPlayerIds();
           const newGame = new TriviaGame(playerIds);
           const newGameId = generateGameId();
-          
+          console.log(`New game ID: ${newGameId}`);
+
+          // Copy character data from the original game, but reset health
+          const oldGameState = game.getGameState();
+          oldGameState.players.forEach(player => {
+            const newPlayerIndex = newGame.getGameState().players.findIndex(p => p.userId === player.userId);
+            if (newPlayerIndex !== -1) {
+              // Only copy character, reset everything else
+              newGame.getGameState().players[newPlayerIndex].character = player.character;
+              // Ensure health is reset to default
+              newGame.getGameState().players[newPlayerIndex].health = 1000;
+              console.log(`Copied character ${player.character} for player ${player.userId} with fresh health`);
+            }
+          });
+
           activeGames.set(newGameId, newGame);
-          
+
           // Update player connections to point to new game
           playerIds.forEach(id => playerConnections.set(id, newGameId));
-          
+
           // Inform players of new game
-          io.to(gameId).emit('rematch_created', { 
+          console.log(`Emitting rematch_created event to game ${gameId}`);
+          io.to(gameId).emit('rematch_created', {
             newGameId,
             message: 'All players accepted rematch. New game created!'
           });
         } else {
-          // Let players know someone requested a rematch
-          io.to(gameId).emit('rematch_requested', { 
-            userId,
-            message: `Player ${userId} requested a rematch`
-          });
+          console.log(`Not all players want rematch yet. Waiting for other players...`);
         }
+      } else {
+        console.error(`Game not found for rematch request: ${gameId}`);
       }
     });
 
@@ -310,22 +365,24 @@ function findMatch(socket: Socket, playerData: string | PlayerData, io: Server) 
       socket.leave('waiting_room');
       opponent.leave('waiting_room');
       
-      // Notify both players about the match with opponent usernames
+      // Notify both players about the match with opponent information
       io.to(socket.id).emit('match_found', {
         gameId,
         message: 'Match found! Joining game...',
         opponent: {
           userId: opponentId,
-          username: opponentId // Using userId as username for now
+          username: opponentId, // Using userId as username initially
+          character: opponentCharacter
         }
       });
-      
+
       io.to(opponent.id).emit('match_found', {
         gameId,
         message: 'Match found! Joining game...',
         opponent: {
           userId: userId,
-          username: userId // Using userId as username for now
+          username: userId, // Using userId as username initially
+          character: character
         }
       });
       
@@ -435,13 +492,24 @@ function sendNextQuestion(io: Server, gameId: string) {
           if (game.isGameOver()) {
             const finalResults = game.getFinalResults();
             io.to(gameId).emit('game_over', finalResults);
-            
+
             // Update player stats in database
             updatePlayerStats(finalResults);
-            
-            // Clean up
-            activeGames.delete(gameId);
-            game.getPlayerIds().forEach(id => playerConnections.delete(id));
+
+            // Mark game as completed but don't remove it yet
+            // We need to keep it for rematch functionality
+            game.getGameState().status = 'completed';
+
+            // Set a 5-minute timeout to clean up the game if no rematch happens
+            setTimeout(() => {
+              // Check if game still exists and is still in completed state
+              const gameToCleanup = activeGames.get(gameId);
+              if (gameToCleanup && gameToCleanup.getGameState().status === 'completed') {
+                console.log(`Cleaning up inactive game ${gameId} after timeout`);
+                activeGames.delete(gameId);
+                gameToCleanup.getPlayerIds().forEach(id => playerConnections.delete(id));
+              }
+            }, 5 * 60 * 1000); // 5 minutes
           } else {
             game.moveToNextQuestion();
             sendNextQuestion(io, gameId);
