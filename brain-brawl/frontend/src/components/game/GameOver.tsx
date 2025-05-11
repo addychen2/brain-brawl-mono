@@ -8,9 +8,11 @@ interface GameOverProps {
   };
   userId: string;
   onRequestRematch: () => void;
+  rematchRequested?: boolean;
+  playersWantingRematch?: string[];
 }
 
-const GameOver = ({ results, userId, onRequestRematch }: GameOverProps) => {
+const GameOver = ({ results, userId, onRequestRematch, rematchRequested = false, playersWantingRematch = [] }: GameOverProps) => {
   const navigate = useNavigate();
   
   if (!results) {
@@ -56,21 +58,35 @@ const GameOver = ({ results, userId, onRequestRematch }: GameOverProps) => {
         </div>
         
         <div className="retro-action-buttons">
-          <button 
-            onClick={onRequestRematch}
-            className="retro-button"
-          >
-            rematch
-          </button>
-          
-          <button 
+          {rematchRequested ? (
+            <div className="retro-rematch-waiting">
+              <p>Waiting for opponent to accept rematch...</p>
+              <div className="retro-loader"></div>
+              {playersWantingRematch.length > 0 && (
+                <p>
+                  {playersWantingRematch.includes(userId)
+                    ? "You've requested a rematch"
+                    : "Your opponent has requested a rematch"}
+                </p>
+              )}
+            </div>
+          ) : (
+            <button
+              onClick={onRequestRematch}
+              className="retro-button"
+            >
+              request rematch
+            </button>
+          )}
+
+          <button
             onClick={() => navigate('/waiting-room')}
             className="retro-button"
           >
             find new opponent
           </button>
-          
-          <button 
+
+          <button
             onClick={() => navigate('/')}
             className="retro-button"
           >

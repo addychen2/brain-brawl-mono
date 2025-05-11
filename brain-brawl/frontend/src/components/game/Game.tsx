@@ -24,6 +24,8 @@ interface GameState {
   opponentAnimation: 'idle' | 'attack' | 'hurt' | 'death';
   playerHealth: number;
   opponentHealth: number;
+  rematchRequested: boolean;
+  playersWantingRematch: string[];
 }
 
 interface GameProps {
@@ -51,7 +53,9 @@ const Game = ({ socket, user }: GameProps) => {
     playerAnimation: 'idle',
     opponentAnimation: 'idle',
     playerHealth: 100,
-    opponentHealth: 100
+    opponentHealth: 100,
+    rematchRequested: false,
+    playersWantingRematch: []
   });
   
   const [error, setError] = useState('');
@@ -64,16 +68,27 @@ const Game = ({ socket, user }: GameProps) => {
       setError('Connection to game server lost. Please go back and try again.');
       return;
     }
-    
+
+    // Reset animation states and health when joining a new game
+    setGameState(prev => ({
+      ...prev,
+      playerAnimation: 'idle',
+      opponentAnimation: 'idle',
+      playerHealth: 1000,
+      opponentHealth: 1000,
+      rematchRequested: false,
+      playersWantingRematch: []
+    }));
+
     // Get character selection from localStorage if it exists
     const savedCharacter = localStorage.getItem('selectedCharacter') || 'blue';
     setGameState(prev => ({...prev, playerCharacter: savedCharacter}));
-    
+
     // Join the game room
-    socket.emit('join_game', { 
-      gameId, 
+    socket.emit('join_game', {
+      gameId,
       userId: user.userId,
-      character: savedCharacter 
+      character: savedCharacter
     });
     
     // Listen for match found event to get opponent info
@@ -133,7 +148,7 @@ const Game = ({ socket, user }: GameProps) => {
       // Get player and opponent data including characters
       const playerData = state.players?.find((p: any) => p.userId === user.userId);
       const opponentData = state.players?.find((p: any) => p.userId !== user.userId);
-      
+
       setGameState(prevState => ({
         ...prevState,
         ...state,
@@ -142,7 +157,12 @@ const Game = ({ socket, user }: GameProps) => {
         playerCharacter: playerData?.character || prevState.playerCharacter,
         opponentCharacter: opponentData?.character || prevState.opponentCharacter,
         playerHealth: playerData?.health ?? 1000,
-        opponentHealth: opponentData?.health ?? 1000
+        opponentHealth: opponentData?.health ?? 1000,
+        // Make sure animation states are reset
+        playerAnimation: 'idle',
+        opponentAnimation: 'idle',
+        rematchRequested: false,
+        playersWantingRematch: []
       }));
     });
     
@@ -366,11 +386,36 @@ const Game = ({ socket, user }: GameProps) => {
     });
     
     socket.on('rematch_requested', (data) => {
-      // Maybe show a notification that opponent requested rematch
+      // Update UI to show that a player has requested a rematch
       console.log('Rematch requested by:', data.userId);
+      console.log('Players who want a rematch:', data.playersWantingRematch);
+
+      // Update state to show who has requested a rematch
+      setGameState(prevState => ({
+        ...prevState,
+        playersWantingRematch: data.playersWantingRematch || []
+      }));
+
+      // If the current user isn't the one who requested, play a notification sound
+      if (data.userId !== user.userId) {
+        playSound('ding'); // Play a sound to notify the user
+      }
     });
     
     socket.on('rematch_created', (data) => {
+      console.log('Rematch created, navigating to new game:', data.newGameId);
+
+      // Reset the game state before navigating
+      setGameState(prevState => ({
+        ...prevState,
+        rematchRequested: false,
+        playersWantingRematch: [],
+        playerAnimation: 'idle',
+        opponentAnimation: 'idle',
+        playerHealth: 1000,
+        opponentHealth: 1000
+      }));
+
       // Navigate to the new game
       navigate(`/game/${data.newGameId}`);
     });
@@ -533,11 +578,19 @@ const Game = ({ socket, user }: GameProps) => {
   
   const handleRequestRematch = () => {
     if (!socket || !gameId) return;
-    
+
+    console.log(`Sending rematch request: gameId=${gameId}, userId=${user.userId}`);
+
     socket.emit('rematch_request', {
       gameId,
       userId: user.userId
     });
+
+    // Update state to show waiting UI
+    setGameState(prevState => ({
+      ...prevState,
+      rematchRequested: true
+    }));
   };
   
   const renderGameContent = () => {
@@ -603,6 +656,8 @@ const Game = ({ socket, user }: GameProps) => {
             results={gameState.gameResults}
             userId={user.userId}
             onRequestRematch={handleRequestRematch}
+            rematchRequested={gameState.rematchRequested}
+            playersWantingRematch={gameState.playersWantingRematch}
           />
         );
         
