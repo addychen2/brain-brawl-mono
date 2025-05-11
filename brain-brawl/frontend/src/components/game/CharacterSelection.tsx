@@ -9,9 +9,9 @@ interface CharacterSelectionProps {
 }
 
 const characters = [
-  { id: 'blue', name: 'Blue Monster' },
-  { id: 'pink', name: 'Pink Monster' },
-  { id: 'white', name: 'White Monster' }
+  { id: 'blue', name: 'Azul' },
+  { id: 'pink', name: 'Rosa' },
+  { id: 'white', name: 'Bai' }
 ];
 
 const CharacterSelection = ({ onSelect, selectedCharacter = 'blue', standalone = false }: CharacterSelectionProps) => {
