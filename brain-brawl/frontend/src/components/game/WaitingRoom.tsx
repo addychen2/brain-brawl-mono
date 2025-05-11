@@ -129,7 +129,7 @@ const WaitingRoom = ({ socket, user }: WaitingRoomProps) => {
         <h2>Game Rules</h2>
         <ul>
           <li>Each game consists of 10 trivia questions</li>
-          <li>You have 10 seconds to answer each question</li>
+          <li>You have 20 seconds to answer each question</li>
           <li>Answer correctly to earn points</li>
           <li>The faster you answer, the more points you earn</li>
           <li>The player who deals the most damage at the end wins!</li>
