@@ -111,6 +111,9 @@ npm start
 ```bash
 cd frontend
 npm run build
+
+# for production view on local
+npm run preview
 ```
 
 2. Deploy the `dist` directory to your web server or hosting service.
