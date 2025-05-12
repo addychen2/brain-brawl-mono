@@ -31,13 +31,17 @@ const Question = ({
   
   useEffect(() => {
     if (!question) return;
-    
+
     // Combine correct and incorrect answers
     const allAnswers = [question.correctAnswer, ...question.incorrectAnswers];
-    
-    // Shuffle answers
-    const shuffled = [...allAnswers].sort(() => Math.random() - 0.5);
-    
+
+    // Fisher-Yates algorithm for better shuffling
+    const shuffled = [...allAnswers];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+
     setShuffledAnswers(shuffled);
   }, [question]);
   

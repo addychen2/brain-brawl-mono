@@ -66,7 +66,7 @@ npm run dev
 ## Game Rules
 
 - Each game consists of 10 trivia questions
-- You have 20 seconds to answer each question
+- You have 10 seconds to answer each question
 - Answer correctly to earn points
 - The faster you answer, the more points you earn
 - The player with the highest score at the end wins

@@ -24,7 +24,10 @@ export const setupSocketConnection = (io: Server) => {
       console.log(`Current waiting players: ${Array.from(waitingPlayers.values()).map(p => p.userId).join(', ')}`);
       
       socket.join('waiting_room');
-      findMatch(socket, data, io);
+      // Handle the async findMatch function
+      findMatch(socket, data, io).catch(err => {
+        console.error('Error finding match:', err);
+      });
     });
 
     // Join specific game room
@@ -313,12 +316,13 @@ interface PlayerData {
 }
 
 // Find a match for a player in the waiting room
-function findMatch(socket: Socket, playerData: string | PlayerData, io: Server) {
+async function findMatch(socket: Socket, playerData: string | PlayerData, io: Server) {
   const userId = typeof playerData === 'object' ? playerData.userId : playerData;
   const character = (typeof playerData === 'object' && playerData.character) ? playerData.character : 'blue';
   
   // Get all sockets in waiting room
-  io.in('waiting_room').fetchSockets().then(sockets => {
+  try {
+    const sockets = await io.in('waiting_room').fetchSockets();
     // Filter out the current socket
     const availablePlayers = sockets.filter(s => s.id !== socket.id);
     
@@ -365,13 +369,35 @@ function findMatch(socket: Socket, playerData: string | PlayerData, io: Server) 
       socket.leave('waiting_room');
       opponent.leave('waiting_room');
       
+      // Try to get usernames if possible
+      let user1Username = userId;
+      let user2Username = opponentId;
+
+      try {
+        // Try to import User model
+        let User;
+        try {
+          User = require('./models/User').default;
+          // If we get here, User model is available
+          const user1 = await User.findById(userId);
+          const user2 = await User.findById(opponentId);
+
+          if (user1 && user1.username) user1Username = user1.username;
+          if (user2 && user2.username) user2Username = user2.username;
+        } catch (error) {
+          console.log('User model not found, using user IDs as usernames');
+        }
+      } catch (error) {
+        console.error('Error fetching usernames:', error);
+      }
+
       // Notify both players about the match with opponent information
       io.to(socket.id).emit('match_found', {
         gameId,
         message: 'Match found! Joining game...',
         opponent: {
           userId: opponentId,
-          username: opponentId, // Using userId as username initially
+          username: user2Username, // Use actual username if available
           character: opponentCharacter
         }
       });
@@ -381,7 +407,7 @@ function findMatch(socket: Socket, playerData: string | PlayerData, io: Server) 
         message: 'Match found! Joining game...',
         opponent: {
           userId: userId,
-          username: userId, // Using userId as username initially
+          username: user1Username, // Use actual username if available
           character: character
         }
       });
@@ -389,7 +415,9 @@ function findMatch(socket: Socket, playerData: string | PlayerData, io: Server) 
       // Log the created game and players
       console.log(`Game ${gameId} created with players: ${game.getPlayerIds().join(', ')}`);
     }
-  });
+  } catch (error) {
+    console.error('Error finding match:', error);
+  }
 }
 
 // Handle player disconnect
@@ -468,7 +496,7 @@ function sendNextQuestion(io: Server, gameId: string) {
     // Send the question to all players
     io.to(gameId).emit('new_question', questionData);
     
-    // Set a timeout for this question - guaranteed full 20 seconds
+    // Set a timeout for this question - guaranteed full 10 seconds
     const timer = setTimeout(() => {
       console.log(`Time's up for game ${gameId}, round ${game.getGameState().currentRound}`);
       
