@@ -16,7 +16,7 @@ const express_1 = __importDefault(require("express"));
 const axios_1 = __importDefault(require("axios"));
 const router = express_1.default.Router();
 // Replace this with your fixed questions URL
-const QUESTIONS_URL = 'https://opentdb.com/api.php?amount=50&category=9&type=multiple';
+const QUESTIONS_URL = 'https://opentdb.com/api.php?amount=128&category=9&type=multiple';
 
 // Get trivia questions
 router.get('/questions', (_req, res) => __awaiter(void 0, void 0, void 0, function* () {

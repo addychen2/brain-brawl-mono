@@ -4,7 +4,7 @@ import axios from 'axios';
 const router = express.Router();
 
 // Replace with fixed URL for more variety of questions
-const QUESTIONS_URL = 'https://opentdb.com/api.php?amount=50&category=9&type=multiple';
+const QUESTIONS_URL = 'https://opentdb.com/api.php?amount=128&category=9&type=multiple';
 
 // Get trivia questions
 router.get('/questions', async function(_req: Request, res: Response) {
