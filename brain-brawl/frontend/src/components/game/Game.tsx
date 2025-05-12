@@ -95,9 +95,14 @@ const Game = ({ socket, user }: GameProps) => {
     socket.on('match_found', (data) => {
       // Store opponent info
       if (data.opponent) {
+        // Use userId as username initially, to prevent showing IDs briefly
+        const opponentUsername = data.opponent.username || data.opponent.userId;
         setGameState(prevState => ({
           ...prevState,
-          opponent: data.opponent
+          opponent: {
+            ...data.opponent,
+            username: opponentUsername // Ensure we always show a username, even if it's just the ID temporarily
+          }
         }));
       }
     });
@@ -308,8 +313,9 @@ const Game = ({ socket, user }: GameProps) => {
           
           // Check if player or opponent health is zero to show death animation
           // Use the current health after our immediate animations
-          const playerAnimation = prevState.playerHealth <= 0 ? 'death' : 'idle';
-          const opponentAnimation = prevState.opponentHealth <= 0 ? 'death' : 'idle';
+          // Once a character dies, they remain in 'death' animation state permanently
+          const playerAnimation = (prevState.playerAnimation === 'death' || prevState.playerHealth <= 0) ? 'death' : 'idle';
+          const opponentAnimation = (prevState.opponentAnimation === 'death' || prevState.opponentHealth <= 0) ? 'death' : 'idle';
           
           return {
             ...prevState,
@@ -379,9 +385,9 @@ const Game = ({ socket, user }: GameProps) => {
         opponentHealth: opponentData?.health ?? prevState.opponentHealth,
         playerCharacter: playerData?.character || prevState.playerCharacter,
         opponentCharacter: opponentData?.character || prevState.opponentCharacter,
-        // Set animations based on final health
-        playerAnimation: (playerData?.health <= 0) ? 'death' : 'idle',
-        opponentAnimation: (opponentData?.health <= 0) ? 'death' : 'idle'
+        // Set animations based on final health or previous death state
+        playerAnimation: (prevState.playerAnimation === 'death' || playerData?.health <= 0) ? 'death' : 'idle',
+        opponentAnimation: (prevState.opponentAnimation === 'death' || opponentData?.health <= 0) ? 'death' : 'idle'
       }));
     });
     
@@ -541,25 +547,28 @@ const Game = ({ socket, user }: GameProps) => {
       playSound('wrong');
     }
     
-    // Play attack animation when submitting an answer
+    // Only play attack animation when submitting a correct answer
     // Don't play sounds here - they're already played above
     setGameState(prevState => ({
       ...prevState,
-      playerAnimation: 'attack',
+      // Only set animation to 'attack' if the answer is correct
+      playerAnimation: isCorrect ? 'attack' : 'idle',
       // If answer is correct, show immediate visual feedback by updating opponent health
       // This is just a visual preview - the server will provide the actual values later
-      opponentHealth: isCorrect ? 
-        Math.max(0, prevState.opponentHealth - estimatedPoints) : 
+      opponentHealth: isCorrect ?
+        Math.max(0, prevState.opponentHealth - estimatedPoints) :
         prevState.opponentHealth
     }));
     
-    // Reset to idle after animation completes
-    setTimeout(() => {
-      setGameState(prevState => ({
-        ...prevState,
-        playerAnimation: 'idle'
-      }));
-    }, 800);
+    // Reset to idle after animation completes (only needed for correct answers)
+    if (isCorrect) {
+      setTimeout(() => {
+        setGameState(prevState => ({
+          ...prevState,
+          playerAnimation: 'idle'
+        }));
+      }, 800);
+    }
     
     // Submit answer to server
     socket.emit('submit_answer', {
@@ -670,11 +679,33 @@ const Game = ({ socket, user }: GameProps) => {
                 <div className="options-box">
                   {gameState.question &&
                     <div className="options-grid">
-                      {/* Using fixed order of answers to prevent reshuffling */}
-                      {[
-                        gameState.question.correctAnswer,
-                        ...gameState.question.incorrectAnswers
-                      ].map((answer, index) => {
+                      {/* Shuffled answers using a deterministic algorithm based on question ID */}
+                      {(() => {
+                        // Combine all answers
+                        const allAnswers = [
+                          gameState.question.correctAnswer,
+                          ...gameState.question.incorrectAnswers
+                        ];
+
+                        // Create a shuffled version using the question ID as seed
+                        // This ensures consistent order for the same question
+                        const questionId = gameState.question.id || '';
+                        const seed = Array.from(questionId).reduce((acc, char) => acc + char.charCodeAt(0), 0);
+
+                        // Fisher-Yates shuffle with seed
+                        const shuffled = [...allAnswers];
+                        const random = (n) => {
+                          const x = Math.sin(seed + n) * 10000;
+                          return x - Math.floor(x);
+                        };
+
+                        for (let i = shuffled.length - 1; i > 0; i--) {
+                          const j = Math.floor(random(i) * (i + 1));
+                          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                        }
+
+                        return shuffled;
+                      })().map((answer, index) => {
                         // Format text to handle HTML entities and make lowercase
                         const formatText = (text) => {
                           const tempDiv = document.createElement('div');

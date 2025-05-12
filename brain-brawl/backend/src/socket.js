@@ -324,7 +324,7 @@ function sendNextQuestion(io, gameId) {
         }
         // Send the question to all players
         io.to(gameId).emit('new_question', questionData);
-        // Set a timeout for this question - guaranteed full 20 seconds
+        // Set a timeout for this question - guaranteed full 10 seconds
         const timer = setTimeout(() => {
             console.log(`Time's up for game ${gameId}, round ${game.getGameState().currentRound}`);
             // If game still exists and some players haven't answered
@@ -357,7 +357,7 @@ function sendNextQuestion(io, gameId) {
                     }
                 }, 5000);
             }
-        }, 20000); // Exactly 20 seconds per question
+        }, 10000); // Exactly 10 seconds per question
         // Store the timer so we can clear it if all players answer before time's up
         questionTimers.set(gameId, timer);
     }
