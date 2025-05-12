@@ -243,14 +243,10 @@
   margin-bottom: 0.5rem;
 }
 
-/* When character is dead, hide their sprite after animation completes */
+/* Separate the death animation playing from the sprite container fading out */
 .character-dead {
-  animation: fadeOut 0.5s ease-out 1.2s forwards;
-}
-
-@keyframes fadeOut {
-  0% { opacity: 1; }
-  100% { opacity: 0; display: none; visibility: hidden; }
+  /* This will be applied to the sprite and won't affect the container position */
+  pointer-events: none; /* Prevent interaction with dead characters */
 }
 
 /* Health bars */

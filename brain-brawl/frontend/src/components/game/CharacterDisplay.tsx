@@ -43,10 +43,11 @@ const CharacterDisplay = ({
   
   const containerClass = isOpponent ? 'opponent-character' : 'player-character';
   const nameClass = isOpponent ? 'opponent-character-name' : 'player-character-name';
-  const spriteClass = `character-sprite ${character}-${currentAnimation}`;
 
-  // Add a class to completely hide the sprite container if character is dead
-  const spriteContainerClass = `${isOpponent ? 'opponent' : 'player'}-sprite-container${currentAnimation === 'death' ? ' character-dead' : ''}`;
+  // Add a class for the death animation, but apply it just to the sprite
+  const spriteContainerClass = `${isOpponent ? 'opponent' : 'player'}-sprite-container`;
+  // Use the death animation class on the sprite itself
+  const spriteClass = `character-sprite ${character}-${currentAnimation}${currentAnimation === 'death' ? ' character-dead' : ''}`;
   
   // Calculate health bar width as a percentage of 1000 max health
   const healthPercentage = Math.max(0, Math.min(100, (health / 1000) * 100));

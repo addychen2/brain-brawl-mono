@@ -29,13 +29,14 @@ const Question = ({
 }: QuestionProps) => {
   const [shuffledAnswers, setShuffledAnswers] = useState<string[]>([]);
   
+  // Shuffle answers when question changes (new round) with completely random order
   useEffect(() => {
     if (!question) return;
 
     // Combine correct and incorrect answers
     const allAnswers = [question.correctAnswer, ...question.incorrectAnswers];
 
-    // Fisher-Yates algorithm for better shuffling
+    // Fisher-Yates algorithm with true randomness
     const shuffled = [...allAnswers];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -43,7 +44,7 @@ const Question = ({
     }
 
     setShuffledAnswers(shuffled);
-  }, [question]);
+  }, [question.id]); // Only depend on question.id to shuffle once per question
   
   if (!question) {
     return <div>Loading question...</div>;
