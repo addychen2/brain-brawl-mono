@@ -615,30 +615,122 @@ const Game = ({ socket, user }: GameProps) => {
       case 'active':
         return (
           <>
-            <div className="character-display">
-              <CharacterDisplay 
-                character={gameState.playerCharacter}
-                name={user.username}
-                animationState={gameState.playerAnimation}
-                health={gameState.playerHealth}
-              />
-              <CharacterDisplay 
-                character={gameState.opponentCharacter}
-                name={gameState.opponent?.username || 'Opponent'}
-                isOpponent={true}
-                animationState={gameState.opponentAnimation}
-                health={gameState.opponentHealth}
-              />
+            <div className="pokemon-battle-layout">
+              {/* Brain Brawl title */}
+              <h1 className="retro-title">brain brawl</h1>
+
+              {/* Top stats bar */}
+              <div className="battle-stats">
+                <p className="category-text">category: {gameState.question ? gameState.question.category.toLowerCase() : ''}</p>
+                <p className={gameState.timeRemaining <= 5 ? 'time-low' : ''}>time: {gameState.timeRemaining}s</p>
+              </div>
+
+              {/* Battle field with characters */}
+              <div className="battle-field">
+                {/* Opponent at top left */}
+                <div className="opponent-position">
+                  <CharacterDisplay
+                    character={gameState.opponentCharacter}
+                    name={gameState.opponent?.username || 'Opponent'}
+                    isOpponent={true}
+                    animationState={gameState.opponentAnimation}
+                    health={gameState.opponentHealth}
+                  />
+                </div>
+
+                {/* Player at bottom right */}
+                <div className="player-position">
+                  <CharacterDisplay
+                    character={gameState.playerCharacter}
+                    name={user.username}
+                    animationState={gameState.playerAnimation}
+                    health={gameState.playerHealth}
+                  />
+                </div>
+              </div>
+
+              {/* Battle interface */}
+              <div className="battle-interface">
+                {/* Question on left */}
+                <div className="question-box">
+                  <div className="question-text">
+                    {gameState.question ?
+                      (() => {
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = gameState.question.question;
+                        const decodedText = tempDiv.textContent || gameState.question.question;
+                        return decodedText.toLowerCase();
+                      })()
+                      : 'loading question...'
+                    }
+                  </div>
+                </div>
+
+                {/* Options on right */}
+                <div className="options-box">
+                  {gameState.question &&
+                    <div className="options-grid">
+                      {/* Using fixed order of answers to prevent reshuffling */}
+                      {[
+                        gameState.question.correctAnswer,
+                        ...gameState.question.incorrectAnswers
+                      ].map((answer, index) => {
+                        // Format text to handle HTML entities and make lowercase
+                        const formatText = (text) => {
+                          const tempDiv = document.createElement('div');
+                          tempDiv.innerHTML = text;
+                          const decodedText = tempDiv.textContent || text;
+                          return decodedText.toLowerCase();
+                        };
+
+                        return (
+                          <button
+                            key={index}
+                            className={`option-button ${
+                              gameState.answer
+                              ? answer === gameState.question.correctAnswer
+                                ? 'correct-answer'
+                                : gameState.answer === answer
+                                  ? 'wrong-answer'
+                                  : 'disabled'
+                              : ''
+                            } ${gameState.answer ? 'disabled' : ''}`}
+                            onClick={() => {
+                              if (!gameState.answer) {
+                                handleSubmitAnswer(answer);
+                              }
+                            }}
+                            disabled={!!gameState.answer}
+                          >
+                            {formatText(answer)}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  }
+                </div>
+              </div>
+
+              {/* Answer feedback */}
+              {gameState.answerResult && (
+                <div className="answer-feedback">
+                  {gameState.answerResult.isCorrect ? (
+                    <p className="retro-correct">
+                      correct! +{gameState.answerResult.pointsEarned} points
+                    </p>
+                  ) : (
+                    <p className="retro-incorrect">
+                      incorrect. the correct answer was: {(() => {
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = gameState.question.correctAnswer;
+                        const decodedText = tempDiv.textContent || gameState.question.correctAnswer;
+                        return decodedText.toLowerCase();
+                      })()}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
-            <Question
-              question={gameState.question}
-              round={gameState.round}
-              totalRounds={gameState.totalRounds}
-              timeRemaining={gameState.timeRemaining}
-              onSubmitAnswer={handleSubmitAnswer}
-              selectedAnswer={gameState.answer}
-              answerResult={gameState.answerResult}
-            />
           </>
         );
         

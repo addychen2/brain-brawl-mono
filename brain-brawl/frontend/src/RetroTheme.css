@@ -58,14 +58,168 @@
   color: #001f4d;
 }
 
-/* Character display in game */
-.character-display {
-  margin: 1rem 0;
-  position: relative;
-  height: 100px;
+/* Pokemon Battle Layout */
+.pokemon-battle-layout {
+  display: flex;
+  flex-direction: column;
   width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  position: relative;
+  height: 100%;
+  font-family: 'VT323', monospace;
+}
+
+/* Battle stats at top */
+.battle-stats {
   display: flex;
   justify-content: space-between;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 10px 20px;
+  border-radius: 8px;
+  color: #001f4d;
+  margin-bottom: 10px;
+  font-family: 'VT323', monospace;
+  font-size: 24px;
+}
+
+/* Battle field area */
+.battle-field {
+  width: 100%;
+  height: 250px;
+  position: relative;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 12px;
+  margin-bottom: 15px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* Pokemon-style character positions */
+.opponent-position, .player-position {
+  position: absolute;
+  transform: scale(1.2);
+}
+
+.opponent-position {
+  top: 20px;
+  right: 80px;
+}
+
+.player-position {
+  bottom: 20px;
+  left: 80px;
+}
+
+/* Battle interface for question and options */
+.battle-interface {
+  display: flex;
+  width: 100%;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+/* Question box (left side) */
+.question-box {
+  flex: 1;
+  min-height: 120px;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+}
+
+.question-text {
+  color: white;
+  font-size: 28px;
+  text-align: center;
+  line-height: 1.4;
+  font-family: 'VT323', monospace;
+  width: 100%;
+}
+
+/* Options box (right side) */
+.options-box {
+  flex: 1;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.options-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 15px;
+}
+
+/* Option buttons */
+.options-grid .option-button {
+  background-color: rgba(0, 31, 77, 1);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 15px;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: 'VT323', monospace;
+  text-align: center;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+  letter-spacing: 1px;
+  justify-content: center;
+}
+
+.options-grid .option-button:hover {
+  background-color: #003880;
+  transform: translateY(-5px);
+  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 72, 179, 0.8);
+}
+
+.options-grid .option-button:active {
+  transform: translateY(2px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+}
+
+.options-grid .option-button.correct-answer {
+  background-color: rgba(92, 232, 92, 0.8);
+}
+
+.options-grid .option-button.wrong-answer {
+  background-color: rgba(255, 87, 87, 0.8);
+}
+
+.options-grid .option-button.disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Answer feedback */
+.answer-feedback {
+  margin-top: 10px;
+  padding: 15px;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 24px;
+  background-color: rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* Feedback text */
+.retro-correct, .retro-incorrect {
+  margin: 0;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.retro-correct {
+  color: #4caf50;
+}
+
+.retro-incorrect {
+  color: #ff4d4d;
 }
 
 .player-character, .opponent-character {
@@ -86,6 +240,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin-bottom: 0.5rem;
 }
 
 /* Health bars */
@@ -100,6 +255,7 @@
   -ms-interpolation-mode: nearest-neighbor;
   margin-bottom: 5px;
   width: 100%;
+  position: relative;
 }
 
 .health-bar {
@@ -123,16 +279,13 @@
 }
 
 .health-text {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  position: relative;
   font-size: 12px;
   font-weight: bold;
   color: white;
   text-align: center;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
-  line-height: 15px;
+  margin-top: 2px;
 }
 
 .opponent-character .character-sprite {
@@ -1115,35 +1268,70 @@
     font-size: 64px;
     margin: 20px 0 30px;
   }
-  
+
   .retro-menu {
     padding: 30px;
     gap: 25px;
   }
-  
+
   .retro-button {
     font-size: 36px;
     padding: 15px 30px;
     max-width: 400px;
   }
-  
+
   .options-container {
     grid-template-columns: 1fr;
   }
-  
+
   .practice-stats {
     flex-direction: column;
     align-items: center;
     gap: 5px;
   }
-  
+
   .retro-leaderboard-table th,
   .retro-leaderboard-table td {
     padding: 8px 4px;
     font-size: 18px;
   }
-  
+
   .retro-login-info {
     font-size: 18px;
+  }
+
+  /* Responsive Pokemon battle layout */
+  .pokemon-battle-layout {
+    width: 100%;
+    padding: 0 10px;
+  }
+
+  .battle-interface {
+    flex-direction: column;
+  }
+
+  .battle-field {
+    height: 200px;
+  }
+
+  .opponent-position {
+    transform: scale(0.9);
+    top: 10px;
+    left: 10px;
+  }
+
+  .player-position {
+    transform: scale(0.9);
+    bottom: 10px;
+    right: 10px;
+  }
+
+  .question-box, .options-box {
+    flex: none;
+    width: 100%;
+  }
+
+  .question-box {
+    margin-bottom: 15px;
   }
 }

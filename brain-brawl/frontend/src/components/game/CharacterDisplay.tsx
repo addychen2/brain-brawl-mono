@@ -47,11 +47,15 @@ const CharacterDisplay = ({
   return (
     <div className={containerClass}>
       <div className={nameClass}>{name}</div>
-      
+
+      <div className={`${isOpponent ? 'opponent' : 'player'}-sprite-container`}>
+        <div className={spriteClass}></div>
+      </div>
+
       {/* Health bar using SpriteSheetTest styling */}
       <div className="health-bar-container">
         <div className="health-bar">
-          <div 
+          <div
             className="health-bar__value"
             style={{
               '--health-percent': `${healthPercentage}%`
@@ -59,10 +63,6 @@ const CharacterDisplay = ({
           ></div>
         </div>
         <div className="health-text">{health}/1000</div>
-      </div>
-      
-      <div className={`${isOpponent ? 'opponent' : 'player'}-sprite-container`}>
-        <div className={spriteClass}></div>
       </div>
     </div>
   );
