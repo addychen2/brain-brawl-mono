@@ -57,6 +57,9 @@ const Game = ({ socket, user }: GameProps) => {
     rematchRequested: false,
     playersWantingRematch: []
   });
+
+  // Add a random seed that changes with each new question
+  const [randomSeed, setRandomSeed] = useState<number>(Math.random());
   
   const [error, setError] = useState('');
   
@@ -173,13 +176,16 @@ const Game = ({ socket, user }: GameProps) => {
     
     socket.on('new_question', (data) => {
       console.log('New question received:', data);
-      
+
       // Clear any existing timer first
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
-      
+
+      // Generate a completely new random seed for this question
+      setRandomSeed(Math.random() * 10000);
+
       setGameState(prevState => ({
         ...prevState,
         question: data.question,
@@ -190,7 +196,7 @@ const Game = ({ socket, user }: GameProps) => {
         answerResult: null,
         status: 'active'
       }));
-      
+
       // Start a new timer with a small delay to ensure state is updated
       setTimeout(() => {
         startTimer();
@@ -679,7 +685,7 @@ const Game = ({ socket, user }: GameProps) => {
                 <div className="options-box">
                   {gameState.question &&
                     <div className="options-grid">
-                      {/* Shuffled answers using a deterministic algorithm based on question ID */}
+                      {/* Shuffled answers using true randomization */}
                       {(() => {
                         // Combine all answers
                         const allAnswers = [
@@ -687,15 +693,15 @@ const Game = ({ socket, user }: GameProps) => {
                           ...gameState.question.incorrectAnswers
                         ];
 
-                        // Create a shuffled version using the question ID as seed
-                        // This ensures consistent order for the same question
-                        const questionId = gameState.question.id || '';
-                        const seed = Array.from(questionId).reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                        // Use the randomSeed state variable which changes with each new question
+                        // This ensures different random order in each round but consistent within a round
+                        const seed = randomSeed;
 
-                        // Fisher-Yates shuffle with seed
+                        // Fisher-Yates shuffle with seed for consistent ordering
                         const shuffled = [...allAnswers];
-                        const random = (n) => {
-                          const x = Math.sin(seed + n) * 10000;
+                        const random = (i) => {
+                          // Use a seeded random number generator
+                          const x = Math.sin(seed + i) * 10000;
                           return x - Math.floor(x);
                         };
 

@@ -12,6 +12,16 @@ interface Question {
   category: string;
 }
 
+// Helper function to shuffle array
+const shuffleArray = (array: any[]) => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
 // Mock data for practice mode
 const mockQuestions: Question[] = [
   {
@@ -58,8 +68,38 @@ const PracticeMode = () => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [gameOver, setGameOver] = useState(false);
-  
+  // Random seed for truly random ordering between rounds
+  const [questionSeed, setQuestionSeed] = useState<number>(Math.random() * 10000);
+  const [shuffledOptions, setShuffledOptions] = useState<string[]>([]);
+
   const navigate = useNavigate();
+
+  // Shuffle options ONLY when question changes
+  useEffect(() => {
+    const currentQuestion = mockQuestions[currentQuestionIndex];
+
+    // Generate a completely new random seed when question changes
+    setQuestionSeed(Math.random() * 10000);
+
+    // Create a seeded shuffle based on the new random seed
+    const seededShuffle = (array) => {
+      const result = [...array];
+      // Seeded random function
+      const random = (i) => {
+        const x = Math.sin(questionSeed + i) * 10000;
+        return x - Math.floor(x);
+      };
+
+      // Fisher-Yates with seed
+      for (let i = result.length - 1; i > 0; i--) {
+        const j = Math.floor(random(i) * (i + 1));
+        [result[i], result[j]] = [result[j], result[i]];
+      }
+      return result;
+    };
+
+    setShuffledOptions(seededShuffle(currentQuestion.options));
+  }, [currentQuestionIndex]);
 
   // Timer countdown effect
   useEffect(() => {
@@ -158,18 +198,18 @@ const PracticeMode = () => {
       <div className="retro-menu practice-container">
         <div className="question-category">{currentQuestion.category}</div>
         <p className="question-text">{currentQuestion.question}</p>
-        
+
         <div className="options-container">
-          {currentQuestion.options.map((option) => (
+          {shuffledOptions.map((option) => (
             <button
               key={option}
               onClick={() => !isAnswered && handleAnswer(option)}
               className={`retro-button option-button ${
-                isAnswered 
-                  ? option === currentQuestion.correctAnswer 
+                isAnswered
+                  ? option === currentQuestion.correctAnswer
                     ? 'correct-answer'
-                    : option === selectedOption 
-                      ? 'wrong-answer' 
+                    : option === selectedOption
+                      ? 'wrong-answer'
                       : ''
                   : ''
               }`}
